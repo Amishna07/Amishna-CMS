@@ -1,0 +1,44 @@
+/* Import workfiles: a short path from source to range to review. */
+.wi-flow-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.wi-flow-steps span{display:flex;align-items:center;gap:10px;min-width:0;padding:13px 14px;border:1px solid #e7dfd4;border-radius:13px;background:#faf8f4;color:#776f68;font-size:13px;font-weight:650}
+.wi-flow-steps b{display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border-radius:50%;background:#eee8de;color:#61584f;font-size:12px}
+.wi-flow-steps .current{background:#eaf6f1;border-color:#71ae9c;color:#155c52}.wi-flow-steps .current b,.wi-flow-steps .complete b{background:#137e70;color:white}.wi-flow-steps .complete{color:#215e54}
+.wi-import-source{padding:28px;margin-bottom:22px;border-color:#e5ded4;border-radius:20px;box-shadow:0 12px 36px #2520190a}
+.wi-import-source>.panel-head{border-bottom:0;padding:0 0 18px}.wi-import-source>.panel-head h2{font-size:22px}.wi-import-source>.panel-head p{font-size:13px}
+.wi-import-source .wi-project-context{font-size:13px;margin-bottom:18px}
+.wi-import-source .wi-source-switch{gap:14px;margin-bottom:18px}
+.wi-import-source .wi-source-option{min-height:92px;padding:19px 22px;border:1px solid #dedfd8;border-radius:16px;background:#fbfaf8;color:#242b29;box-shadow:none}
+.wi-import-source .wi-source-option svg{width:27px;height:27px;color:#178b7b}
+.wi-import-source .wi-source-option strong{font-size:17px}.wi-import-source .wi-source-option small{font-size:12px;color:#6e7471}
+.wi-import-source .wi-source-option.active{background:#ebf7f2;border-color:#218c7c;box-shadow:inset 0 0 0 1px #218c7c}
+.wi-import-source .wi-source-content{padding:27px;border:1px solid #e6e8e2;border-radius:17px;background:#fff}
+.wi-source-stage{display:grid;gap:20px;min-width:0}
+.wi-stage-intro h2{font-size:22px;margin:5px 0 5px;letter-spacing:-.03em}.wi-stage-intro p{font-size:13px;line-height:1.55;color:#6d7772}
+.wi-kicker{display:block;color:#168474;font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
+.wi-dropzone-new{display:flex;min-height:225px;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:#f5faf7;border:2px dashed #a4cdbd;border-radius:16px}
+.wi-dropzone-new>svg{width:36px;height:36px}.wi-dropzone-new h3{font-size:19px;margin:10px 0 0}.wi-dropzone-new p{font-size:12px;margin:6px 0 18px}
+.wi-range-card{padding:22px;border:1px solid #cfe5da;border-radius:16px;background:#f8fcf9}
+.wi-range-head{display:flex;justify-content:space-between;gap:20px;align-items:start}.wi-range-head h3,.wi-google-range h3{font-size:18px;margin:5px 0 4px}.wi-range-head p,.wi-google-range>p{color:#61766b;font-size:12px;line-height:1.5}
+.wi-range-list{display:grid;gap:9px;max-height:460px;overflow:auto;margin:18px 0 0}
+.wi-range-row{display:grid;grid-template-columns:minmax(170px,1fr) minmax(140px,210px) minmax(140px,210px) auto;gap:12px;align-items:end;padding:13px;border:1px solid #e3eae5;border-radius:12px;background:#fff}
+.wi-range-file{align-self:center;min-width:0}.wi-range-file strong,.wi-range-file span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wi-range-file strong{font-size:13px}.wi-range-file span{font-size:11px;color:#75817b;margin-top:4px}
+.wi-range-row label,.wi-google-range label{display:grid;gap:6px;color:#51675b;font-size:11px;font-weight:700}.wi-range-row .input,.wi-google-range .input{width:100%;min-width:0;margin:0;font-size:12px}.wi-remove-file{align-self:end}
+.wi-range-footer{display:flex;justify-content:space-between;align-items:center;gap:18px;padding-top:17px}.wi-range-footer strong,.wi-range-footer span{display:block}.wi-range-footer strong{font-size:14px;color:#155e50}.wi-range-footer span{font-size:11px;color:#6b7d73;margin-top:4px}.wi-range-error{margin-top:14px;padding:11px 13px;border-radius:9px;background:#fff0ed;color:#a33c32;font-size:12px}
+.wi-advanced{padding:12px 14px;border:1px solid #e4e8e2;border-radius:11px;background:#fcfdfb}.wi-advanced summary{cursor:pointer;font-size:13px;font-weight:700;color:#47675b}.wi-advanced .wi-project-type{margin:14px 0 0;max-width:none}
+.wi-source-stage .wi-upload-tools{display:flex;flex-wrap:wrap;gap:9px;padding:0}.wi-source-stage .wi-upload-tools .btn{font-size:12px}
+.wi-google-source .wi-google-form{margin-top:0}.wi-google-source .wi-google-form label{font-size:12px}.wi-google-source .wi-google-form .input{height:46px;font-size:13px}.wi-google-source .wi-google-form>.btn{height:46px}
+.wi-google-source .wi-project-select{font-size:12px;margin:0}
+.wi-google-range{margin-top:3px}.wi-google-range .form-grid{margin:17px 0 10px}.wi-google-range form>p{font-size:12px;color:#516c5d}.wi-google-range .button-row{margin-top:15px}
+.wi-google-note{font-size:11px;line-height:1.6}.wi-google-links h3{font-size:14px}.wi-google-link strong{font-size:12px}.wi-google-link span{font-size:10px}
+.wi-import-review{padding:26px;border-radius:18px}.wi-import-review .panel-head h2{font-size:21px}.wi-import-review .panel-head p{font-size:13px;line-height:1.5}.wi-import-review .wi-auto-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:17px 0}.wi-import-review .wi-auto-metrics>div{border-radius:10px}.wi-import-review .wi-auto-metrics span{font-size:11px}
+.wi-import-review+.wi-import-source{display:none}
+.wi-compact-preview{overflow:hidden;margin:17px 0;border:1px solid #dce8df;border-radius:13px;background:#fff}.wi-compact-head{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:13px 16px;background:#f2f7f3}.wi-compact-head strong{font-size:13px}.wi-compact-head span{font-size:11px;color:#6b7b70}
+.wi-preview-row{display:grid;grid-template-columns:25px minmax(0,1fr) auto;gap:11px;align-items:start;padding:12px 16px;border-top:1px solid #edf1ec}.wi-preview-indicator{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:800;background:#dcf3e6;color:#0b785c}.wi-preview-indicator.error{background:#ffede8;color:#b04b36}.wi-preview-indicator.removed{background:#fff2d8;color:#9f6b17}.wi-preview-row strong,.wi-preview-row span,.wi-preview-row small{display:block}.wi-preview-row strong{font-size:12px}.wi-preview-row span,.wi-preview-row small{font-size:11px;line-height:1.4;color:#738279;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wi-preview-row small.wi-preview-error{color:#a33c32;white-space:normal}.wi-preview-row b{font-size:11px;color:#1e7562;white-space:nowrap}
+.wi-compact-preview details summary{cursor:pointer;padding:12px 16px;border-top:1px solid #e5ebe4;font-size:12px;font-weight:700;color:#176e60}
+.wi-queue-simple .panel-head h2{font-size:17px}.wi-queue-simple .panel-head p{font-size:12px}.wi-queue-file-copy strong{font-size:12px}.wi-queue-file-copy span,.wi-cue-count{font-size:10px}
+html[data-theme="dark"] .wi-flow-steps span{background:#172b30;border-color:#365059;color:#d5e3de}html[data-theme="dark"] .wi-flow-steps .current{background:#19443d;border-color:#59bda8}
+html[data-theme="dark"] .wi-import-source .wi-source-content,html[data-theme="dark"] .wi-range-row,html[data-theme="dark"] .wi-compact-preview{background:#172b30;border-color:#365059;color:#e4f0eb}
+html[data-theme="dark"] .wi-range-card,html[data-theme="dark"] .wi-advanced,html[data-theme="dark"] .wi-compact-head{background:#1c3835;border-color:#365e54;color:#e4f0eb}
+html[data-theme="dark"] .wi-stage-intro p,html[data-theme="dark"] .wi-range-head p,html[data-theme="dark"] .wi-range-file span,html[data-theme="dark"] .wi-range-footer span,html[data-theme="dark"] .wi-compact-head span,html[data-theme="dark"] .wi-preview-row span,html[data-theme="dark"] .wi-preview-row small{color:#aec3ba}
+@media(max-width:850px){.wi-range-row{grid-template-columns:1fr 1fr}.wi-range-file{grid-column:1/-1}.wi-remove-file{grid-column:1/-1;justify-self:start}.wi-compact-head{align-items:start;flex-direction:column}}
+@media(max-width:600px){.wi-flow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.wi-flow-steps span{font-size:11px;padding:9px}.wi-import-source{padding:17px}.wi-import-source .wi-source-content{padding:17px}.wi-import-source .wi-source-option{min-height:78px}.wi-range-card{padding:16px}.wi-range-row{grid-template-columns:1fr}.wi-range-file{grid-column:auto}.wi-remove-file{grid-column:auto}.wi-range-footer{align-items:stretch;flex-direction:column}.wi-range-footer .btn{width:100%}.wi-import-review .wi-auto-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}

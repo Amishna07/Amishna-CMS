@@ -1,0 +1,291 @@
+/* Amishna Music materials. The existing teal palette and type scale stay in place.
+   Three levels: floating glass, quiet translucent panels, opaque working data. */
+:root {
+  --ui-bg: #f2f5f3;
+  --ui-canvas: #f8f8f4;
+  --ui-muted: #5d747c;
+  --ui-green: #2a755b;
+  --glass-primary: #0f8176;
+  --glass-fill: rgba(255,255,255,.76);
+  --glass-panel: rgba(255,255,255,.88);
+  --glass-control: rgba(255,255,255,.82);
+  --glass-border: rgba(132,158,151,.24);
+  --glass-highlight: rgba(255,255,255,.86);
+  --glass-shadow: 0 8px 28px rgba(28,56,50,.055), inset 0 1px 0 var(--glass-highlight);
+  --glass-panel-shadow: 0 3px 14px rgba(28,56,50,.035), inset 0 1px 0 var(--glass-highlight);
+  --glass-floating-shadow: 0 22px 70px rgba(25,48,44,.17), inset 0 1px 0 var(--glass-highlight);
+  --glass-nav: rgba(24,54,66,.94);
+  --glass-nav-border: rgba(255,255,255,.15);
+  --glass-nav-active: rgba(149,221,207,.15);
+  --glass-nav-hover: rgba(224,250,245,.075);
+  --glass-focus: rgba(15,137,126,.14);
+  --glass-overlay: rgba(33,49,47,.22);
+  --glass-light: rgba(255,255,255,.10);
+  --glass-radius: 20px;
+  --glass-control-radius: 11px;
+  --glass-blur: 18px;
+  --glass-time: 180ms;
+  --glass-ease: cubic-bezier(.2,.8,.2,1);
+  --glass-environment: radial-gradient(ellipse at 12% 0%,rgba(166,201,190,.15),transparent 48%), radial-gradient(ellipse at 92% 60%,rgba(211,207,189,.12),transparent 52%), var(--ui-canvas);
+}
+html[data-theme="dark"] {
+  --ui-bg: #191d1f;
+  --ui-canvas: #191d1f;
+  --ui-surface: rgba(37,43,45,.94);
+  --ui-solid: #252b2d;
+  --ui-raised: #2c3335;
+  --ui-soft: #2a3133;
+  --ui-line: #3a4447;
+  --ui-ink: #dce4e4;
+  --ui-muted: #a2b0b2;
+  --ui-accent: #56b8aa;
+  --ui-accent-soft: #293f3d;
+  --ui-accent-ink: #8ccfc2;
+  --ui-hover: #303c3d;
+  --ui-glass: rgba(37,43,45,.88);
+  --ui-shadow: 0 4px 18px rgba(0,0,0,.075);
+  --ui-nav: #22292c;
+  --ui-nav-muted: #a5b7bb;
+  --ui-nav-ink: #c1ced0;
+  --ui-nav-selected: #e0efeb;
+  --ui-green: #7bd1b4;
+  --ui-green-bg: #293d35;
+  --ui-amber-bg: #3c3528;
+  --ui-red-bg: #402e30;
+  --ui-blue-bg: #2a3742;
+  --glass-fill: rgba(40,47,49,.83);
+  --glass-panel: rgba(43,50,52,.92);
+  --glass-control: rgba(49,57,59,.85);
+  --glass-border: rgba(164,185,185,.17);
+  --glass-highlight: rgba(234,247,247,.065);
+  --glass-shadow: 0 8px 28px rgba(0,0,0,.10), inset 0 1px 0 var(--glass-highlight);
+  --glass-panel-shadow: 0 3px 14px rgba(0,0,0,.05), inset 0 1px 0 var(--glass-highlight);
+  --glass-floating-shadow: 0 22px 70px rgba(0,0,0,.28), inset 0 1px 0 var(--glass-highlight);
+  --glass-nav: rgba(34,41,44,.93);
+  --glass-nav-border: rgba(192,215,215,.14);
+  --glass-nav-active: rgba(116,183,171,.16);
+  --glass-nav-hover: rgba(195,221,218,.055);
+  --glass-focus: rgba(86,184,170,.17);
+  --glass-overlay: rgba(10,14,16,.34);
+  --glass-light: rgba(212,242,234,.055);
+  --glass-environment: radial-gradient(ellipse at 12% 0%,rgba(98,125,117,.09),transparent 48%), radial-gradient(ellipse at 92% 60%,rgba(143,133,111,.04),transparent 52%), var(--ui-canvas);
+}
+/* Public utilities for new UI; the adapters below attach them to existing views. */
+.lg-surface, .lg-navigation, .lg-toolbar, .lg-modal {
+  background: var(--glass-fill); border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius); box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+}
+.lg-panel { background: var(--glass-panel); border: 1px solid var(--glass-border); border-radius: var(--glass-radius); box-shadow: var(--glass-panel-shadow); }
+.lg-solid { background: var(--ui-solid); border: 1px solid var(--ui-line); border-radius: var(--glass-radius); }
+.lg-button, .lg-input { background: var(--glass-control); border: 1px solid var(--glass-border); border-radius: var(--glass-control-radius); color: var(--ui-ink); }
+.lg-button { transition: transform var(--glass-time) var(--glass-ease), background-color var(--glass-time), box-shadow var(--glass-time); }
+.lg-button:active:not(:disabled) { transform: scale(.985); }
+.lg-button:disabled { opacity: .45; cursor: not-allowed; }
+.lg-input:focus-visible, .lg-button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+
+html[data-theme] body.ux-modern.ux-modern { background: var(--glass-environment)!important; }
+html[data-theme] body.ux-modern.ux-modern #app :is(.shell,.main,.content,#page) { background: transparent!important; }
+html[data-theme] body.ux-modern.ux-modern #app .shell { grid-template-columns: 244px minmax(0,1fr)!important; }
+html[data-theme] body.ux-modern.ux-modern #app .main { margin: 0!important; min-width: 0!important; }
+html[data-theme] body.ux-modern.ux-modern #app .sidebar {
+  inset: 12px auto calc(var(--sync-height,44px) + 12px) 12px!important;
+  width: 220px!important; padding: 15px 12px 14px!important;
+  background: var(--glass-nav)!important; border: 1px solid var(--glass-nav-border)!important;
+  border-radius: 22px!important; box-shadow: var(--glass-shadow)!important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+  scrollbar-width: thin; scrollbar-color: #829c9b55 transparent;
+}
+html[data-theme] body.ux-modern.ux-modern #app .sidebar .nav-item {
+  border: 1px solid transparent!important; border-radius: 11px!important;
+  transition: background-color var(--glass-time) var(--glass-ease), border-color var(--glass-time), box-shadow var(--glass-time)!important;
+}
+html[data-theme] body.ux-modern.ux-modern #app .sidebar .nav-item:hover { background: var(--glass-nav-hover)!important; }
+html[data-theme] body.ux-modern.ux-modern #app .sidebar .nav-item.active {
+  background: var(--glass-nav-active)!important; border-color: var(--glass-nav-border)!important;
+  box-shadow: 0 3px 10px #001a1b0d, inset 0 1px 0 #ffffff0a!important;
+}
+html[data-theme] body.ux-modern.ux-modern #app .sidebar :is(button,a):focus-visible { outline-color: #9cd5c9!important; }
+html[data-theme] body.ux-modern.ux-modern #app .topbar {
+  position: sticky!important; top: 12px!important; height: 64px!important; min-height: 64px!important;
+  margin: 12px 20px 0 4px; padding: 0 20px!important; z-index: 15!important;
+  background: var(--glass-fill)!important; border: 1px solid var(--glass-border)!important;
+  border-radius: var(--glass-radius)!important; box-shadow: var(--glass-shadow)!important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+}
+html[data-theme] body.ux-modern.ux-modern #app .content { padding: 28px 24px 24px!important; }
+html[data-theme] body.ux-modern.ux-modern #app .breadcrumb { display: flex!important; min-width: 0; }
+html[data-theme] body.ux-modern.ux-modern #app .top-actions { flex-shrink: 0; }
+html[data-theme] body.ux-modern.ux-modern #app .search-box { background: var(--glass-control)!important; border-color: var(--glass-border)!important; }
+html[data-theme] body.ux-modern.ux-modern #app .search-box input { background: transparent!important; box-shadow: none!important; }
+html[data-theme] body.ux-modern.ux-modern #app .search-box:focus-within { border-color: var(--ui-accent)!important; box-shadow: 0 0 0 3px var(--glass-focus); }
+
+/* Solid working surfaces protect tables, rights details and long editing sessions. */
+html[data-theme] body.ux-modern.ux-modern #app :is(.panel,.ux-card,.project-card,.society-card,.mx-client-card,.mx-client-detail,.mx-repo-card,.mx-repository-detail,.cat-song-list,.cat-song-detail,.cat-detail,.cat-list-head,.cat-artist-card,.cat-artist-list,.cat-artist-summary,.table-wrap,table,.cr-workspace,.cr-cues,.cr-editor,.cr-episode-tabs,.cr-tabs-scroll,.dx-results,.dx-record,.dx-result,.dx-history,.sx-preview,.sx-history,.wi-review-panel,.wi-sample-table,.db-mapping,.db-resolutions) {
+  background: var(--ui-solid)!important;
+  -webkit-backdrop-filter: none!important; backdrop-filter: none!important;
+  border-color: var(--ui-line)!important; box-shadow: 0 2px 12px rgba(30,48,44,.025)!important;
+}
+html[data-theme] body.ux-modern.ux-modern #app :is(table,.table-wrap,.cr-workspace,.cr-tabs-scroll) { box-shadow: none!important; }
+html[data-theme] body.ux-modern.ux-modern #app thead th { background: var(--ui-soft)!important; }
+html[data-theme] body.ux-modern.ux-modern #app .cr-episode-tab { -webkit-backdrop-filter: none!important; backdrop-filter: none!important; }
+
+/* Summary panels give depth without creating a blur layer for every card. */
+html[data-theme] body.ux-modern.ux-modern #app :is(.ux-stat,.metric,.am-stat,.sx-stat,.dx-stat,.mx-stat,.cat-stat,.cat-library-hero,.report-society-card,.cr-context-head,.dx-config,.dx-readiness,.sx-intro,.sx-step,.sx-society) {
+  background: var(--glass-panel)!important; border-color: var(--glass-border)!important;
+  border-radius: var(--glass-radius)!important; box-shadow: var(--glass-panel-shadow)!important;
+  -webkit-backdrop-filter: none!important; backdrop-filter: none!important;
+}
+/* Glass controls sit above, never on top of, dense data text. */
+html[data-theme] body.ux-modern.ux-modern #app :is(.ux-toolbar,.cat-control-panel,.cat-toolbar,.filterbar,.cr-episode-toolbar,.cr-cue-tools,.settings-card,.am-export-panel) {
+  background: var(--glass-fill)!important; border-color: var(--glass-border)!important;
+  box-shadow: var(--glass-panel-shadow)!important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%)!important;
+  backdrop-filter: blur(10px) saturate(120%)!important;
+}
+html[data-theme] body.ux-modern.ux-modern #app :is(.ux-toolbar,.cat-control-panel,.cat-toolbar,.settings-card,.am-export-panel) { border-radius: var(--glass-radius)!important; }
+html[data-theme] body.ux-modern.ux-modern #app .cat-song-detail { top: 88px; max-height: calc(100dvh - 148px); }
+html[data-theme] body.ux-modern.ux-modern #app .settings-appearance>button { background: var(--glass-control)!important; border-color: var(--glass-border)!important; }
+html[data-theme] body.ux-modern.ux-modern #app .settings-appearance>button.selected { border-color: var(--ui-accent)!important; box-shadow: 0 0 0 2px var(--glass-focus)!important; }
+.settings-theme-preview.dark { background: linear-gradient(135deg,#202729,#343c3f); color:#a8b9ba; }
+.settings-theme-preview.system { background: linear-gradient(120deg,#f2f5f3 50%,#252b2d 50%); color:#7b9690; }
+
+html[data-theme] body.ux-modern.ux-modern :is(.btn,.theme-toggle,.lg-button) {
+  border-radius: var(--glass-control-radius)!important;
+  transition: transform var(--glass-time) var(--glass-ease), background-color var(--glass-time), border-color var(--glass-time), box-shadow var(--glass-time)!important;
+}
+html[data-theme] body.ux-modern.ux-modern :is(.btn:not(.primary):not(.danger),.theme-toggle) {
+  background: var(--glass-control)!important; border-color: var(--glass-border)!important;
+  box-shadow: inset 0 1px 0 var(--glass-highlight)!important;
+}
+html[data-theme] body.ux-modern.ux-modern :is(.btn,.theme-toggle):hover:not(:disabled) { box-shadow: 0 3px 9px rgba(22,53,47,.09), inset 0 1px 0 var(--glass-highlight)!important; }
+html[data-theme] body.ux-modern.ux-modern :is(.btn,.theme-toggle):active:not(:disabled) { transform: scale(.985)!important; }
+html[data-theme] body.ux-modern.ux-modern :is(.btn.primary,button.primary) {
+  background: var(--glass-primary)!important; border-color: var(--glass-primary)!important; color: #fff!important; filter: none!important;
+}
+html[data-theme] body.ux-modern.ux-modern :is(.btn.primary,button.primary):hover:not(:disabled) {
+  background: #09776d!important; border-color: #09776d!important; filter: none!important;
+}
+html[data-theme] body.ux-modern.ux-modern :is(.btn,.theme-toggle):disabled { transform: none!important; box-shadow: none!important; }
+html[data-theme] body.ux-modern.ux-modern :is(input:not([type=checkbox]):not([type=radio]),select,textarea,.input) {
+  background: var(--glass-control)!important; border-color: var(--glass-border)!important;
+  border-radius: var(--glass-control-radius)!important;
+  transition: border-color var(--glass-time), box-shadow var(--glass-time)!important;
+}
+html[data-theme] body.ux-modern.ux-modern :is(input:not([type=checkbox]):not([type=radio]),select,textarea,.input):focus {
+  border-color: var(--ui-accent)!important; box-shadow: 0 0 0 3px var(--glass-focus)!important;
+}
+html[data-theme] body.ux-modern.ux-modern :is(button,a,input,select,textarea,summary):focus-visible { outline: 2px solid var(--ui-accent)!important; outline-offset: 3px; }
+html[data-theme="dark"] body.ux-modern.ux-modern .storage-status { background: #232e2e!important; color: #c5d4d1!important; }
+
+#dx-results-heading { scroll-margin-top: 100px; }
+.navigation-close, .navigation-backdrop { display: none; }
+html[data-theme] body.ux-modern.ux-modern :is(.db-drop,.ir-drop,.wi-dropzone-simple):focus-within {
+  outline: 2px solid var(--ui-accent)!important; outline-offset: 3px;
+  border-color: var(--ui-accent)!important;
+}
+@media (max-width:760px) {
+  html[data-theme] body.ux-modern.ux-modern #app .navigation-close {
+    display: flex; align-self: flex-end; min-width: 40px; min-height: 40px;
+    align-items: center; justify-content: center; color: var(--ui-nav-selected);
+  }
+  html[data-theme] body.ux-modern.ux-modern #app .navigation-backdrop.visible {
+    display: block; position: fixed; inset: 0; z-index: 29; border: 0;
+    padding: 0; background: var(--glass-overlay); cursor: pointer;
+  }
+}
+.dx-pagination { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 16px 20px; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 11px; }
+.dx-pagination>div { display: flex; gap: 8px; }
+
+/* Dialogs keep synchronous close/focus behavior; motion is purely presentation. */
+html[data-theme] body.ux-modern.ux-modern #modal-root .modal-backdrop {
+  background: var(--glass-overlay)!important;
+  -webkit-backdrop-filter: blur(5px)!important; backdrop-filter: blur(5px)!important;
+}
+html[data-theme] body.ux-modern.ux-modern #modal-root .modal,
+.glass-modal-ghost {
+  background: var(--glass-fill)!important; border: 1px solid var(--glass-border)!important;
+  border-radius: 24px!important; box-shadow: var(--glass-floating-shadow)!important;
+  -webkit-backdrop-filter: blur(22px) saturate(125%); backdrop-filter: blur(22px) saturate(125%);
+}
+html[data-theme] body.ux-modern.ux-modern #modal-root :is(.ced-preview,.ced-scope) { background: var(--ui-soft)!important; border: 1px solid var(--ui-line); }
+html[data-theme] body.ux-modern.ux-modern #modal-root .ced-format-card { background: var(--glass-control)!important; border-color: var(--glass-border)!important; }
+html[data-theme] body.ux-modern.ux-modern #modal-root .ced-format-card.selected { border-color: var(--ui-accent)!important; box-shadow: 0 0 0 2px var(--glass-focus); }
+html[data-theme] body.ux-modern.ux-modern #modal-root .ced-actions { background: var(--ui-solid)!important; border-radius: 14px; padding: 12px; bottom: 0!important; }
+html[data-theme] body.ux-modern.ux-modern #modal-root :is(table,.table-wrap,.cat-rights-list) { background: var(--ui-solid)!important; }
+/* The supplied PNG already has an alpha channel. No plaque, filter or shadow. */
+html[data-theme] :is(.brand-art,.boot-state img) { background: transparent!important; border: 0!important; box-shadow: none!important; filter: none!important; }
+
+/* Small, explicitly opted-in surfaces only; JS is disabled for touch/reduced motion. */
+[data-glass-light] { position: relative; }
+[data-glass-light]::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(160px circle at var(--glass-pointer-x,50%) var(--glass-pointer-y,0%),var(--glass-light),transparent 75%);
+  opacity: 0; transition: opacity var(--glass-time); z-index: 1;
+}
+[data-glass-active]:hover::after { opacity: 1; }
+
+@media (min-width:761px) {
+  html[data-theme] body.ux-modern.ux-modern #app .sidebar { transform: none!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .mobile-menu { display: none!important; }
+}
+@media (min-width:761px) and (max-width:1100px) {
+  html[data-theme] body.ux-modern.ux-modern #app .breadcrumb>span:nth-child(2) { display: none; }
+  html[data-theme] body.ux-modern.ux-modern #app .shell { grid-template-columns: 220px minmax(0,1fr)!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .sidebar { width: 198px!important; padding-inline: 10px!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .topbar { padding-inline: 15px!important; margin-right: 16px; }
+  html[data-theme] body.ux-modern.ux-modern #app .content { padding-inline: 18px!important; }
+}
+@media (max-width:1180px) {
+  html[data-theme] body.ux-modern.ux-modern #app .sx-intro { grid-template-columns: minmax(0,1fr); }
+  html[data-theme] body.ux-modern.ux-modern #app .sx-page>* { min-width: 0; }
+  html[data-theme] body.ux-modern.ux-modern #app .cat-song-detail { max-height: none; }
+}
+@media (max-width:760px) {
+  :root { --glass-blur: 8px; --glass-time: 140ms; --glass-radius: 16px; }
+  html[data-theme] body.ux-modern.ux-modern #app .shell { display: block!important; grid-template-columns: minmax(0,1fr)!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .sidebar {
+    top: 8px!important; left: 8px!important; bottom: calc(var(--sync-height,44px) + 8px)!important;
+    width: min(270px,calc(100vw - 36px))!important; z-index: 30!important;
+    transform: translateX(calc(-100% - 12px))!important;
+    transition: transform 180ms var(--glass-ease)!important;
+  }
+  html[data-theme] body.ux-modern.ux-modern #app .sidebar.open { transform: translateX(0)!important; box-shadow: var(--glass-floating-shadow)!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .topbar { top: 8px!important; margin: 8px 10px 0; height: 58px!important; min-height: 58px!important; padding: 0 12px!important; gap: 8px!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .content { padding: 22px 14px!important; }
+  html[data-theme] body.ux-modern.ux-modern #app .breadcrumb { min-width: 0; gap: 7px; }
+  html[data-theme] body.ux-modern.ux-modern #app .breadcrumb strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html[data-theme] body.ux-modern.ux-modern #app .breadcrumb .header-brand { display: none; }
+  html[data-theme] body.ux-modern.ux-modern #app .breadcrumb>span:nth-child(2) { display: none; }
+  html[data-theme] body.ux-modern.ux-modern #app .mobile-menu { display: flex!important; }
+  html[data-theme] body.ux-modern.ux-modern #app :is(.ux-toolbar,.cat-control-panel,.cat-toolbar,.filterbar,.cr-episode-toolbar,.cr-cue-tools,.settings-card) { -webkit-backdrop-filter: none!important; backdrop-filter: none!important; background: var(--ui-solid)!important; }
+  html[data-theme] body.ux-modern.ux-modern #modal-root .modal { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  [data-glass-light]::after { display: none; }
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  :root, html[data-theme="dark"] { --glass-fill: var(--ui-solid); --glass-panel: var(--ui-solid); --glass-control: var(--ui-raised); --glass-nav: var(--ui-nav); }
+}
+@media (prefers-reduced-transparency:reduce) {
+  :root, html[data-theme="dark"] { --glass-fill: var(--ui-solid); --glass-panel: var(--ui-solid); --glass-control: var(--ui-raised); --glass-nav: var(--ui-nav); }
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) *,
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) *::before,
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) *::after,
+  html body *, html body *::before, html body *::after { -webkit-backdrop-filter: none!important; backdrop-filter: none!important; }
+  [data-glass-light]::after { display: none!important; }
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) *,
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) *::before,
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) *::after,
+  html body *, html body *::before, html body *::after { animation: none!important; transition: none!important; scroll-behavior: auto!important; }
+  [data-glass-light]::after { display: none!important; }
+  html[data-theme] body.ux-modern.ux-modern :is(.btn,.theme-toggle):active:not(:disabled) { transform: none!important; }
+}
+@media (forced-colors:active) {
+  html[data-theme] body.ux-modern.ux-modern :is(#app,#modal-root):is(#app,#modal-root) :is(.lg-surface,.sidebar,.topbar,.modal,.panel,.btn,.input),
+  html body :is(.lg-surface,.sidebar,.topbar,.modal,.panel,.btn,.input) { border: 1px solid CanvasText!important; box-shadow: none!important; -webkit-backdrop-filter: none!important; backdrop-filter: none!important; }
+  [data-glass-light]::after { display: none!important; }
+}

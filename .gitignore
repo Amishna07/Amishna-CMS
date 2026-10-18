@@ -1,0 +1,29 @@
+# Local configuration and credentials (keep example configuration files).
+.env
+.env.*
+!.env.example
+
+# Installed dependencies, local runtimes and the live SQLite workspace.
+node_modules/
+.local-runtime/
+.local-data/
+backend/data/
+Database/
+# Local transfer package: keep its instructions in Git, but never upload data or credentials.
+Manual-Transfer/*
+!Manual-Transfer/README.md
+
+# Optional machine-specific Windows runtimes kept on this computer.
+/vendor/
+backend/runtime/mongodb/
+.vercel/
+
+# Machine metadata and transient logs.
+.DS_Store
+*.log
+coverage/
+output/
+__pycache__/
+*.pyc
+
+backend/admin-credentials.json

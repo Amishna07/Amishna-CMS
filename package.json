@@ -1,0 +1,22 @@
+{
+  "name": "cue-rights-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:frontend": "node scripts/dev.js frontend",
+    "dev:backend": "node scripts/dev.js backend",
+    "start": "node scripts/dev.js",
+    "prepare:transfer": "node scripts/prepare-manual-transfer.js",
+    "build": "npm run build --workspace frontend",
+    "test": "npm test --workspace backend && npm test --workspace frontend",
+    "verify": "npm run build && npm test"
+  }
+}

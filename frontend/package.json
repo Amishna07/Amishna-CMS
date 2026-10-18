@@ -1,0 +1,11 @@
+{
+  "name": "cue-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --env-file-if-exists=.env server.js",
+    "build": "node ../scripts/verify-frontend.js",
+    "test": "node --test tests/*.test.js"
+  }
+}

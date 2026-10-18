@@ -1,0 +1,23 @@
+# Local data, credentials, dependencies and optional runtimes never go to Vercel.
+.env
+.env.*
+**/.env
+**/.env.*
+.vercel/
+.git/
+node_modules/
+backend/data/
+backend/runtime/
+/vendor/
+.local-runtime/
+.local-data/
+*.log
+coverage/
+output/
+
+# Build and functions need source files, but not local tests or legacy references.
+backend/tests/
+frontend/tests/
+scripts/tests/
+Templates/
+docs/

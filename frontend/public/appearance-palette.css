@@ -1,0 +1,412 @@
+/* Appearance Studio palettes. This file follows liquid-glass.css in the page. */
+
+/* Opaque presets reuse the existing component surfaces and keep dense data legible. */
+html[data-surface]:not([data-surface="liquid-glass"]) {
+  --glass-fill: var(--ui-surface);
+  --glass-panel: var(--ui-surface);
+  --glass-control: var(--ui-raised);
+  --glass-border: var(--ui-line);
+  --glass-highlight: transparent;
+  --glass-shadow: 0 9px 30px rgb(0 0 0 / .055);
+  --glass-panel-shadow: 0 3px 16px rgb(0 0 0 / .04);
+  --glass-floating-shadow: 0 22px 65px rgb(0 0 0 / .18);
+  --glass-nav: var(--ui-nav);
+  --glass-nav-border: rgb(255 255 255 / .12);
+  --glass-nav-active: rgb(255 255 255 / .12);
+  --glass-nav-hover: rgb(255 255 255 / .075);
+  --glass-overlay: rgb(12 16 22 / .35);
+  --glass-light: transparent;
+  --glass-blur: 0px;
+  --glass-environment: var(--ui-canvas);
+}
+
+html[data-theme="light"][data-surface="studio"] {
+  --ui-bg: #f5f2f8;
+  --ui-canvas: #faf9fc;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f8f6fb;
+  --ui-soft: #f4f1f8;
+  --ui-line: #e7e0eb;
+  --ui-ink: #292330;
+  --ui-muted: #6d6274;
+  --ui-hover: #f0ebf5;
+  --ui-glass: #fff;
+  --ui-shadow: 0 5px 24px rgb(45 27 61 / .05);
+  --ui-nav: #211c29;
+  --ui-nav-active: #392f45;
+  --ui-nav-hover: #302938;
+  --ui-nav-ink: #d2c7d8;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #ab9caf;
+}
+html[data-theme="dark"][data-surface="studio"] {
+  --ui-bg: #101014;
+  --ui-canvas: #101014;
+  --ui-surface: #1a181e;
+  --ui-solid: #1a181e;
+  --ui-raised: #232027;
+  --ui-soft: #211e25;
+  --ui-line: #353039;
+  --ui-ink: #f1ecf3;
+  --ui-muted: #afa4b5;
+  --ui-hover: #2b2630;
+  --ui-glass: #1a181e;
+  --ui-shadow: 0 5px 24px rgb(0 0 0 / .13);
+  --ui-nav: #151218;
+  --ui-nav-active: #2b2331;
+  --ui-nav-hover: #231d28;
+  --ui-nav-ink: #d7cbdc;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a89aad;
+  --glass-shadow: 0 10px 35px rgb(0 0 0 / .2);
+  --glass-panel-shadow: 0 4px 20px rgb(0 0 0 / .13);
+}
+
+html[data-theme="light"][data-surface="midnight"] {
+  --ui-bg: #edf2f9;
+  --ui-canvas: #f4f7fc;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f3f6fb;
+  --ui-soft: #eef2f8;
+  --ui-line: #dce4ef;
+  --ui-ink: #1d2a3d;
+  --ui-muted: #617086;
+  --ui-hover: #e8eef7;
+  --ui-glass: #fff;
+  --ui-nav: #18243a;
+  --ui-nav-active: #293c59;
+  --ui-nav-hover: #22334d;
+  --ui-nav-ink: #c1d0e4;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #9eb1ca;
+}
+html[data-theme="dark"][data-surface="midnight"] {
+  --ui-bg: #0b101b;
+  --ui-canvas: #0b101b;
+  --ui-surface: #151d2a;
+  --ui-solid: #151d2a;
+  --ui-raised: #1d2837;
+  --ui-soft: #1a2432;
+  --ui-line: #314052;
+  --ui-ink: #ebf1fa;
+  --ui-muted: #a3b1c6;
+  --ui-hover: #263449;
+  --ui-glass: #151d2a;
+  --ui-nav: #0e1625;
+  --ui-nav-active: #243551;
+  --ui-nav-hover: #1b2a42;
+  --ui-nav-ink: #c5d3e8;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #9cafc9;
+  --glass-shadow: 0 10px 35px rgb(0 0 0 / .22);
+}
+
+html[data-theme="light"][data-surface="graphite"] {
+  --ui-bg: #f2f2f2;
+  --ui-canvas: #f7f7f7;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f5f5f5;
+  --ui-soft: #f0f0f0;
+  --ui-line: #dedede;
+  --ui-ink: #262626;
+  --ui-muted: #676767;
+  --ui-hover: #eaeaea;
+  --ui-glass: #fff;
+  --ui-nav: #2b2b2b;
+  --ui-nav-active: #454545;
+  --ui-nav-hover: #393939;
+  --ui-nav-ink: #d2d2d2;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a8a8a8;
+}
+html[data-theme="dark"][data-surface="graphite"] {
+  --ui-bg: #141414;
+  --ui-canvas: #141414;
+  --ui-surface: #222;
+  --ui-solid: #222;
+  --ui-raised: #2b2b2b;
+  --ui-soft: #292929;
+  --ui-line: #3e3e3e;
+  --ui-ink: #efefef;
+  --ui-muted: #b1b1b1;
+  --ui-hover: #333;
+  --ui-glass: #222;
+  --ui-nav: #1b1b1b;
+  --ui-nav-active: #343434;
+  --ui-nav-hover: #2a2a2a;
+  --ui-nav-ink: #d0d0d0;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a6a6a6;
+  --glass-shadow: 0 10px 35px rgb(0 0 0 / .2);
+}
+
+html[data-theme="light"][data-surface="daylight"] {
+  --ui-bg: #f2f7fa;
+  --ui-canvas: #f9fbfd;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f5f9fb;
+  --ui-soft: #eef5f8;
+  --ui-line: #dbe8ed;
+  --ui-ink: #173241;
+  --ui-muted: #617984;
+  --ui-hover: #eaf3f7;
+  --ui-glass: #fff;
+  --ui-nav: #1a3949;
+  --ui-nav-active: #2c5261;
+  --ui-nav-hover: #244757;
+  --ui-nav-ink: #c5dbe2;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #9fbdc7;
+}
+html[data-theme="dark"][data-surface="daylight"] {
+  --ui-bg: #111c24;
+  --ui-canvas: #111c24;
+  --ui-surface: #1c2b34;
+  --ui-solid: #1c2b34;
+  --ui-raised: #263842;
+  --ui-soft: #23333d;
+  --ui-line: #3a515b;
+  --ui-ink: #e9f4f6;
+  --ui-muted: #aec4cc;
+  --ui-hover: #304550;
+  --ui-glass: #1c2b34;
+  --ui-nav: #142832;
+  --ui-nav-active: #2b4c57;
+  --ui-nav-hover: #22404a;
+  --ui-nav-ink: #c8e0e5;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #9cbcc5;
+}
+
+html[data-theme="light"][data-surface="obsidian"] {
+  --ui-bg: #f2f1f1;
+  --ui-canvas: #f8f7f7;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f5f3f3;
+  --ui-soft: #f0eded;
+  --ui-line: #e1dddd;
+  --ui-ink: #262224;
+  --ui-muted: #726b6e;
+  --ui-hover: #eae5e7;
+  --ui-glass: #fff;
+  --ui-nav: #1e1b1e;
+  --ui-nav-active: #393337;
+  --ui-nav-hover: #2d282c;
+  --ui-nav-ink: #d4cbcf;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a99da3;
+}
+html[data-theme="dark"][data-surface="obsidian"] {
+  --ui-bg: #08090b;
+  --ui-canvas: #08090b;
+  --ui-surface: #151619;
+  --ui-solid: #151619;
+  --ui-raised: #1e2024;
+  --ui-soft: #1b1d20;
+  --ui-line: #34363b;
+  --ui-ink: #f4f4f5;
+  --ui-muted: #b2b3b8;
+  --ui-hover: #292b30;
+  --ui-glass: #151619;
+  --ui-nav: #0d0e10;
+  --ui-nav-active: #292b30;
+  --ui-nav-hover: #202125;
+  --ui-nav-ink: #d6d7da;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a1a3a9;
+  --glass-shadow: 0 10px 38px rgb(0 0 0 / .3);
+}
+
+html[data-theme="light"][data-surface="frost"] {
+  --ui-bg: #e8f1f6;
+  --ui-canvas: #f0f7fa;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f4f9fb;
+  --ui-soft: #edf5f8;
+  --ui-line: #d4e3ec;
+  --ui-ink: #193747;
+  --ui-muted: #617f8c;
+  --ui-hover: #e7f2f7;
+  --ui-glass: #fff;
+  --ui-nav: #22445a;
+  --ui-nav-active: #38667b;
+  --ui-nav-hover: #2d556b;
+  --ui-nav-ink: #cfe5eb;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a9cbd5;
+  --glass-fill: rgb(255 255 255 / .85);
+  --glass-panel: rgb(255 255 255 / .9);
+  --glass-control: rgb(255 255 255 / .9);
+  --glass-blur: 22px;
+  --glass-environment: radial-gradient(circle at 15% 8%, #d0e7f2, transparent 42%), radial-gradient(circle at 90% 85%, #e7f2f8, transparent 38%), var(--ui-canvas);
+}
+html[data-theme="dark"][data-surface="frost"] {
+  --ui-bg: #111e28;
+  --ui-canvas: #111e28;
+  --ui-surface: #1e303c;
+  --ui-solid: #1e303c;
+  --ui-raised: #2a3e4b;
+  --ui-soft: #263946;
+  --ui-line: #405866;
+  --ui-ink: #e8f4f8;
+  --ui-muted: #aec9d2;
+  --ui-hover: #35505d;
+  --ui-glass: #1e303c;
+  --ui-nav: #142936;
+  --ui-nav-active: #31556a;
+  --ui-nav-hover: #26475b;
+  --ui-nav-ink: #d2e6eb;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #a4c2ce;
+  --glass-fill: rgb(31 48 59 / .86);
+  --glass-panel: rgb(34 54 65 / .9);
+  --glass-control: rgb(43 64 75 / .91);
+  --glass-blur: 22px;
+  --glass-environment: radial-gradient(circle at 15% 8%, #1a3c50, transparent 42%), radial-gradient(circle at 90% 85%, #252f45, transparent 38%), var(--ui-canvas);
+}
+
+html[data-theme="light"][data-surface="aurora"] {
+  --ui-bg: #f1eef8;
+  --ui-canvas: #f7f5fb;
+  --ui-surface: #fff;
+  --ui-solid: #fff;
+  --ui-raised: #f8f5fb;
+  --ui-soft: #f1edf7;
+  --ui-line: #e3ddeb;
+  --ui-ink: #302940;
+  --ui-muted: #756a84;
+  --ui-hover: #ece6f4;
+  --ui-glass: #fff;
+  --ui-nav: #2b2442;
+  --ui-nav-active: #44375f;
+  --ui-nav-hover: #3a3053;
+  --ui-nav-ink: #d7cee8;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #b1a6c7;
+  --glass-fill: rgb(255 255 255 / .87);
+  --glass-panel: rgb(255 255 255 / .92);
+  --glass-blur: 19px;
+  --glass-environment: radial-gradient(circle at 13% 4%, #dfd2fa, transparent 43%), radial-gradient(circle at 88% 71%, #d1f2ed, transparent 44%), var(--ui-canvas);
+}
+html[data-theme="dark"][data-surface="aurora"] {
+  --ui-bg: #151421;
+  --ui-canvas: #151421;
+  --ui-surface: #242132;
+  --ui-solid: #242132;
+  --ui-raised: #302b3f;
+  --ui-soft: #2b2739;
+  --ui-line: #473f55;
+  --ui-ink: #f0edf7;
+  --ui-muted: #bbb2c9;
+  --ui-hover: #383246;
+  --ui-glass: #242132;
+  --ui-nav: #1d1a2b;
+  --ui-nav-active: #38314f;
+  --ui-nav-hover: #2d2741;
+  --ui-nav-ink: #ded7e9;
+  --ui-nav-selected: #fff;
+  --ui-nav-muted: #b1a5c5;
+  --glass-fill: rgb(36 33 50 / .88);
+  --glass-panel: rgb(39 35 54 / .91);
+  --glass-blur: 19px;
+  --glass-environment: radial-gradient(circle at 14% 5%, #372c59, transparent 42%), radial-gradient(circle at 88% 77%, #1d4a4a, transparent 43%), var(--ui-canvas);
+}
+
+html[data-theme="light"][data-surface="parchment"] {
+  --ui-bg: #f3eddf;
+  --ui-canvas: #f9f5eb;
+  --ui-surface: #fffcf5;
+  --ui-solid: #fffcf5;
+  --ui-raised: #faf4e8;
+  --ui-soft: #f5ecdc;
+  --ui-line: #e6d9c2;
+  --ui-ink: #3f3326;
+  --ui-muted: #806f5b;
+  --ui-hover: #f0e5d1;
+  --ui-glass: #fffcf5;
+  --ui-nav: #3b3329;
+  --ui-nav-active: #584939;
+  --ui-nav-hover: #4b4033;
+  --ui-nav-ink: #e3d6bf;
+  --ui-nav-selected: #fffaf0;
+  --ui-nav-muted: #c4b394;
+}
+html[data-theme="dark"][data-surface="parchment"] {
+  --ui-bg: #211e1a;
+  --ui-canvas: #211e1a;
+  --ui-surface: #302920;
+  --ui-solid: #302920;
+  --ui-raised: #3d3429;
+  --ui-soft: #372f26;
+  --ui-line: #564838;
+  --ui-ink: #f2e9d9;
+  --ui-muted: #c5b39b;
+  --ui-hover: #493c2e;
+  --ui-glass: #302920;
+  --ui-nav: #282219;
+  --ui-nav-active: #493c2d;
+  --ui-nav-hover: #3a3024;
+  --ui-nav-ink: #e1d0b9;
+  --ui-nav-selected: #fff7e8;
+  --ui-nav-muted: #bca98d;
+}
+
+/* Accent choice is independent of the surface. A missing data-accent retains
+   the original teal palette, including the original liquid glass preset. */
+html[data-accent="violet"] { --appearance-primary-lightness: 43%; }
+html[data-accent="indigo"] { --appearance-primary-lightness: 39%; }
+html[data-accent="cyan"] { --appearance-primary-lightness: 27%; }
+html[data-accent="blue"] { --appearance-primary-lightness: 37%; }
+html[data-accent="emerald"] { --appearance-primary-lightness: 26%; }
+html[data-accent="lime"] { --appearance-primary-lightness: 23%; }
+html[data-accent="amber"] { --appearance-primary-lightness: 25%; }
+html[data-accent="coral"] { --appearance-primary-lightness: 36%; }
+html[data-accent="rose"] { --appearance-primary-lightness: 38%; }
+html[data-accent="pink"] { --appearance-primary-lightness: 36%; }
+html[data-accent="custom"] { --appearance-primary-lightness: 22%; --appearance-ink-lightness: 21%; }
+
+html[data-accent] {
+  --glass-primary: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) var(--appearance-primary-lightness, 22%));
+  --ui-accent: var(--glass-primary);
+  --ui-accent-soft: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 94%);
+  --ui-accent-ink: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) var(--appearance-ink-lightness, 27%));
+  --glass-focus: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 44% / .19);
+  --ui-nav-marker: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 70%);
+  --glass-nav-active: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 70% / .2);
+}
+html[data-theme="dark"][data-accent] {
+  --ui-accent: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 70%);
+  --ui-accent-soft: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 22%);
+  --ui-accent-ink: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 79%);
+  --glass-focus: hsl(var(--appearance-hue, 270) var(--appearance-saturation, 80%) 69% / .22);
+}
+
+/* The old component styles contain a few literal teal values. */
+html[data-theme][data-accent] body.ux-modern.ux-modern :is(.btn.primary, button.primary) {
+  background: var(--glass-primary)!important;
+  border-color: var(--glass-primary)!important;
+  color: #fff!important;
+  box-shadow: 0 3px 11px var(--glass-focus)!important;
+}
+html[data-theme][data-accent] body.ux-modern.ux-modern :is(.btn.primary, button.primary):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--glass-primary) 85%, #000)!important;
+  border-color: color-mix(in srgb, var(--glass-primary) 85%, #000)!important;
+}
+html[data-theme][data-accent] body.ux-modern.ux-modern #app .sidebar :is(button, a):focus-visible {
+  outline-color: var(--ui-nav-marker)!important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-surface] {
+    --glass-fill: var(--ui-solid);
+    --glass-panel: var(--ui-solid);
+    --glass-control: var(--ui-raised);
+    --glass-blur: 0px;
+  }
+}
