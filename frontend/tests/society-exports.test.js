@@ -172,8 +172,8 @@ test('each format preserves composer, lyricist and publisher shares, IDs and cue
     const ascap = (await exported('ASCAP', project, episode, [cue], [track])).sheet;
     assert.equal(ascap.B10.v, track.title);
     assert.equal(ascap.D10.v, 367 / 86400);
-    assert.equal(ascap.E10.v, 'Composer Name (ASCAP) 49%\nLyricist Name (ASCAP) 51%');
-    assert.equal(ascap.F10.v, 'Publisher Name (ASCAP) 100%');
+    assert.equal(ascap.E10.v, 'Composer Name (IPRS/PRS/ASCAP) 49%\nLyricist Name (IPRS/PRS/ASCAP) 51%');
+    assert.equal(ascap.F10.v, 'Publisher Name (IPRS/PRS/ASCAP) 100%');
     assert.equal(ascap.G10.v, track.societies.ASCAP);
   }
 });

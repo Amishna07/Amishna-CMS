@@ -6,7 +6,7 @@ const {test}=require('node:test');
 const vm=require('node:vm');
 const source=readFileSync(join(__dirname,'../public/dashboard.js'),'utf8');
 function context(){
-  const ctx=vm.createContext({structuredClone,crypto:globalThis.crypto});ctx.window=ctx;ctx.matchMedia=()=>({matches:false});ctx.document={querySelector:()=>null};
+  const ctx=vm.createContext({structuredClone,crypto:globalThis.crypto,setTimeout:callback=>callback(),requestAnimationFrame:callback=>callback()});ctx.window=ctx;ctx.matchMedia=()=>({matches:false});ctx.scrollTo=()=>{};ctx.document={querySelector:()=>null,getElementById:()=>null};
   vm.runInContext(source.slice(0,source.indexOf('/* data.js */')),ctx);
   vm.runInContext(readFileSync(join(__dirname,'../public/societies.js'),'utf8'),ctx);
   vm.runInContext(source.slice(source.indexOf('/* catalog.js */'),source.indexOf('/* database-import.js */')),ctx);
@@ -46,18 +46,21 @@ test('empty workspace and malformed cue durations remain finite',()=>{
  const state=fixture();state.cues[0].duration=Infinity;assert.equal(ctx.CueInsights.analyze(state).musicDuration,120);
 });
 
-test('song library applies society and contributor filters independently while retaining edit actions',()=>{
+test('song library applies society and contributor filters independently and opens full details explicitly',()=>{
  const ctx=context(),state=fixture();let renders=0;
  const catalog=ctx.CueCatalog.create({state:()=>state,revision:()=>0,esc:value=>String(value??''),icon:()=>'',render:()=>renders++,date:String});
- catalog.change({target:{dataset:{catalog:'song-society'},value:'IPRS'}});let html=catalog.songs();assert.ok(html.includes('data-id="w1"'));assert.ok(!html.includes('data-id="w2"'));assert.ok(html.includes('song-shares'));assert.ok(html.includes('song-merge'));
- catalog.change({target:{dataset:{catalog:'song-role'},value:'Publisher'}});html=catalog.songs();assert.ok(html.includes('No songs match your filters'));assert.equal(renders,2);
+ catalog.change({target:{dataset:{catalog:'song-society'},value:'IPRS'}});let html=catalog.songs();assert.ok(html.includes('data-id="w1"'));assert.ok(!html.includes('data-id="w2"'));assert.ok(!html.includes('song-record-page'));
+ const click=action=>catalog.click({target:{closest:()=>({tagName:'BUTTON',dataset:{catalog:action,id:'w1'}})},preventDefault(){}});
+ click('song-select');html=catalog.songs();assert.ok(html.includes('song-record-page'));assert.ok(html.includes('song-shares'));assert.ok(html.includes('song-merge'));
+ click('song-back');catalog.change({target:{dataset:{catalog:'song-role'},value:'Publisher'}});html=catalog.songs();assert.ok(html.includes('No songs match your filters'));assert.equal(renders,4);
 });
 
 test('song pagination limits visible rows and direct record navigation reaches records beyond the first page',()=>{
  const ctx=context(),state=fixture();state.works=Array.from({length:95},(_,i)=>({id:'song-'+i,title:'Song '+String(i).padStart(3,'0'),parties:[]}));state.cues=[];let page='';
  const catalog=ctx.CueCatalog.create({state:()=>state,revision:()=>0,esc:value=>String(value??''),icon:()=>'',render:()=>{},go:value=>page=value,date:String});
  let html=catalog.songs();assert.equal((html.match(/data-catalog="song-check"/g)||[]).length,40);assert.ok(html.includes('Page 1 of 3'));
- const element={dataset:{catalog:'song-open',id:'song-91'}};catalog.click({target:{closest:()=>element},preventDefault(){}});html=catalog.songs();assert.equal(page,'works');assert.ok(html.includes('Page 3 of 3'));assert.ok(html.includes('<h2>Song 091</h2>'));
+ const element={tagName:'BUTTON',dataset:{catalog:'song-open',id:'song-91'}};catalog.click({target:{closest:()=>element},preventDefault(){}});html=catalog.songs();assert.equal(page,'works');assert.ok(html.includes('song-record-page'));assert.match(html,/<h1\b[^>]*>Song 091<\/h1>/);
+ element.dataset.catalog='song-back';catalog.click({target:{closest:()=>element},preventDefault(){}});html=catalog.songs();assert.ok(html.includes('Page 3 of 3'));assert.ok(html.includes('data-id="song-91"'));
 });
 
 test('derived models are reused across library and report navigation and refresh after saves or workspace replacement',()=>{

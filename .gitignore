@@ -9,6 +9,15 @@ node_modules/
 .local-data/
 backend/data/
 Database/
+# Database copies, journals, and SQL dumps must stay local in every folder.
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-*
+*.sqlite3-*
+*.db-*
+*.sql
+*.sql.gz
 Amishna Music CMS.app/
 # Local transfer package: keep its instructions in Git, but never upload data or credentials.
 Manual-Transfer/*

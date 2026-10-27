@@ -16,6 +16,18 @@ const { applyChanges } = require('../src/workspace-changes');
 const { SQLiteRepository } = require('../src/repository');
 const { replayParsedBody } = require('../../vercel/adapter');
 
+function cleanupAfter(t) {
+  const callbacks = [];
+  t.after(async () => {
+    const errors = [];
+    for (const callback of callbacks.reverse()) {
+      try { await callback(); } catch (error) { errors.push(error); }
+    }
+    if (errors.length) throw new AggregateError(errors, 'Test cleanup failed');
+  });
+  return callback => callbacks.push(callback);
+}
+
 const compressedHeaders = { 'Content-Type': 'application/octet-stream', 'X-Workspace-Encoding': 'gzip' };
 const emptyWorkspace = () => ({ version: 1, works: [], projects: [], cues: [], clients: [], imports: [], exports: [], profiles: [], activity: [] });
 
@@ -141,10 +153,11 @@ test('change-only saves reject stale revisions and unsafe paths without changing
 });
 
 test('SQLite change-only writes use a revision-checked update and retain untouched records', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await mkdtemp(join(tmpdir(), 'amishna-sqlite-patch-'));
-  t.after(() => rm(directory, { recursive: true, force: true }));
+  cleanup(() => rm(directory, { recursive: true, force: true }));
   const repository = new SQLiteRepository({ file: join(directory, 'cms.sqlite'), workspaceId: 'fixture' });
-  t.after(() => repository.close());
+  cleanup(() => repository.close());
   const original = emptyWorkspace();
   original.projects = [{ id: 'SERIES-1', title: 'Series', type: 'Series', episodes: [{ number: 1, title: 'Saved episode' }] }];
   await repository.put(original, 0);

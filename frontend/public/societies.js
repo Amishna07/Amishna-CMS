@@ -21,16 +21,24 @@
   function parse(value) {
     if (Array.isArray(value)) {
       const tokens = [...new Set(value.flatMap(parse))];
-      // Older versions saved "Non Member" as two separate membership tokens.
-      if (tokens.includes('NON') && tokens.includes('MEMBER')) {
-        return [...new Set(tokens.filter(token => token !== 'NON' && token !== 'MEMBER').concat('NON-MEMBER'))];
+      // Older versions saved non-member labels as separate membership tokens.
+      if (tokens.includes('NON') && (tokens.includes('MEMBER') || tokens.includes('SOCIETY'))) {
+        return [...new Set(tokens.filter(token => !['NON', 'MEMBER', 'SOCIETY'].includes(token)).concat('NON-MEMBER'))];
       }
       return tokens;
     }
     if (value && typeof value === 'object') return parse(Object.entries(value).filter(([, enabled]) => enabled === true).map(([name]) => name));
-    const normalized = clean(value).toUpperCase().replace(/\bNON[\s-]*MEMBER\b/g, 'NON-MEMBER');
+    // NS is an explicit non-society affiliation, not a collecting society.
+    const normalized = clean(value).toUpperCase()
+      .replace(/\bNON[\s-]*(?:MEMBER|SOCIETY)\b/g, 'NON-MEMBER')
+      .replace(/(^|[^A-Z0-9.-])N\.?\s*S\.?(?=$|[^A-Z0-9.-])/g, '$1NON-MEMBER');
     return [...new Set((normalized.match(/[A-Z][A-Z0-9-]*/g) || []).filter(token => !['AND', 'OR', 'NONE', 'UNKNOWN', 'NA', 'N', 'A'].includes(token)))];
   }
+
+  const label = value => {
+    const affiliations = parse(value);
+    return affiliations.length === 1 && affiliations[0] === 'NON-MEMBER' ? 'Non-society' : clean(value);
+  };
 
   function findArtist(record, artists = []) {
     if (artists?.byId instanceof Map) {
@@ -116,7 +124,7 @@
     if (!supported.includes(society)) throw new Error('Unsupported society: ' + society);
     const linkedIds = new Set(cues.map(cue => cue.workId)), originals = freezeWorks(works.filter(work => linkedIds.has(work.id)), artists);
     // Format copies retain recorded affiliations rather than inventing membership.
-    if (['PRS', 'ASCAP'].includes(society) && options.membershipPolicy === 'recorded-affiliations-v1') {
+    if (['PRS', 'ASCAP'].includes(society) && ['recorded-affiliations-v1', 'as-entered-v1'].includes(options.membershipPolicy)) {
       return {
         cues: cues.map(clone), works: originals.map(work => ({ ...work, _exportSociety: society })),
         summary: { ...summary({ works: originals, cues }), society, includedCues: cues.length, excludedCues: 0, membershipPolicy: options.membershipPolicy },
@@ -130,7 +138,7 @@
     return { cues: selectedCues, works: selected, summary: { ...summary({ works: originals, cues }), society, includedCues: selectedCues.length, excludedCues: cues.length - selectedCues.length } };
   }
 
-  const api = { supported, parse, memberships, has, isNonMember, performers, freezeWorks, workSocieties, summary, scope, indexArtists };
+  const api = { supported, parse, label, memberships, has, isNonMember, performers, freezeWorks, workSocieties, summary, scope, indexArtists };
   root.CueSocieties = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

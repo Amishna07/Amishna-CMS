@@ -16,6 +16,7 @@ function harness() {
   let revision = 0, activeForm = null;
   const listeners = {}, result = { notices: [], saves: 0 };
   const context = { structuredClone, setTimeout, crypto: require('node:crypto').webcrypto, document: {
+    createElement() { return { innerHTML: '', content: { querySelectorAll: () => [] } }; },
     addEventListener(name, listener) { (listeners[name] ||= []).push(listener); },
     querySelector(selector) { return selector === '#am-track-form' ? activeForm : null; },
   }, FormData: class {
@@ -46,6 +47,11 @@ function harness() {
     const event = { target: activeForm, preventDefault() {}, stopImmediatePropagation() {} };
     for (const listener of listeners.submit || []) listener(event);
   };
+  result.click = action => {
+    const control = { dataset: { am: action } };
+    const event = { target: { closest: selector => selector.includes('[data-am]') ? control : null }, preventDefault() {}, stopImmediatePropagation() {} };
+    for (const listener of listeners.click || []) listener(event);
+  };
   return result;
 }
 
@@ -60,6 +66,60 @@ test('builder shows saved music usage and saving unrelated edits keeps manual pe
   assert.equal(h.state().cues[0].usagePercent, 42.75);
   assert.equal(h.state().cues[0].usage, before.usage);
   assert.deepEqual(h.state().cues[0].societyUsage, before.societyUsage);
+});
+
+for (const storage of ['tuneCode', 'PRS']) test(`builder opens ${storage}-only identifiers in one PRS field and saves both aliases`, () => {
+  const h = harness();
+  const work = h.state().works[0];
+  if (storage === 'tuneCode') work.tuneCode = '000TEST123AB';
+  else work.societies.PRS = '000TEST123AB';
+  h.bump(); h.ui.openCue('cue');
+  const html = h.ui.builder();
+  assert.match(html, /Work ID \/ Tune Code/);
+  assert.match(html, /name="idPRS"[^>]*value="000TEST123AB"/);
+  assert.doesNotMatch(html, /name="tuneCode"/);
+  const beforeUsage = structuredClone(h.state().cues[0].societyUsage);
+  h.submit('am-track-form', { title: 'Background Music', artist: 'Singer', start: '00:00:00', end: '00:01:00',
+    duration: '00:01:00', source: 'Original', usageCount: '1', notes: '', idIPRS: '', idPRS: '  000928AB  ', idASCAP: '' });
+  assert.equal(h.saves, 1, h.notices.join('; '));
+  assert.equal(h.state().works[0].tuneCode, '000928AB');
+  assert.equal(h.state().works[0].societies.PRS, '000928AB');
+  assert.deepEqual(h.state().cues[0].societyUsage, beforeUsage);
+  h.submit('am-track-form', { title: 'Background Music', artist: 'Singer', start: '00:00:00', end: '00:01:00',
+    duration: '00:01:00', source: 'Original', usageCount: '1', notes: '', idIPRS: '', idPRS: '', idASCAP: '' });
+  assert.equal(h.saves, 2, h.notices.join('; '));
+  assert.equal(h.state().works[0].tuneCode, '');
+  assert.equal(h.state().works[0].societies.PRS, '');
+});
+
+test('a partial cue form does not clear an existing PRS identifier when its field is absent', () => {
+  const h = harness();
+  h.state().works[0].tuneCode = '000TEST123AB';
+  h.bump(); h.ui.openCue('cue');
+  h.submit('am-track-form', { title: 'Background Music', artist: 'Singer', start: '00:00:00', end: '00:01:00',
+    duration: '00:01:00', source: 'Original', usageCount: '1', notes: 'Unrelated correction' });
+  assert.equal(h.saves, 1, h.notices.join('; '));
+  assert.equal(h.state().works[0].tuneCode, '000TEST123AB');
+});
+
+for (const storage of ['tuneCode', 'PRS']) for (const replacement of ['', '000-NEW']) test(`Save as New Record clears owned ${storage}-only identifiers and retains ${replacement ? 'new user-entered codes' : 'the original song'}`, () => {
+  const h = harness(), original = h.state().works[0];
+  if (storage === 'tuneCode') original.tuneCode = '000TEST123AB';
+  else original.societies.PRS = '000TEST123AB';
+  const before = structuredClone(original);
+  h.bump(); h.ui.openCue('cue');
+  h.submit('am-track-form', { title: 'New Song', artist: 'Singer', start: '00:00:00', end: '00:01:00',
+    duration: '00:01:00', source: 'Original', usageCount: '1', notes: '', idPRS: replacement || '000TEST123AB' });
+  assert.equal(h.saves, 0, 'Renaming waits for the existing/new record choice');
+  h.click('title-save-new');
+  assert.equal(h.saves, 1, h.notices.join('; '));
+  assert.equal(h.state().works.length, 2);
+  assert.deepEqual(h.state().works.find(work => work.id === 'work'), before);
+  const created = h.state().works.find(work => work.id !== 'work');
+  assert.equal(created.title, 'New Song');
+  assert.equal(created.tuneCode, replacement);
+  assert.equal(created.societies.PRS, replacement);
+  assert.equal(h.state().cues[0].workId, created.id);
 });
 
 test('builder cached lookups follow revision changes, same-length replacements, and restored state', () => {

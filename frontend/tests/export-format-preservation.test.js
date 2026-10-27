@@ -31,6 +31,12 @@ function exportContext(templates, originalMovie = false) {
   vm.runInContext(source, context);
   if (templates) context.CueExportTemplateData = { ...templates };
   if (originalMovie) {
+    // The frozen PRS renderer predates export-policy options. Feed its unchanged
+    // layout renderer the same as-entered records as the current renderer so
+    // these checks continue to isolate formatting, formulas and cell payloads.
+    const scope = context.CueSocieties.scope;
+    context.CueSocieties = { ...context.CueSocieties, scope: (cues, works, society, artists, options) =>
+      scope(cues, works, society, artists, society === 'PRS' ? { membershipPolicy: 'as-entered-v1' } : options) };
     vm.runInContext(originalPrsSource, context);
     const currentBuild = context.CueExports.buildFormatted;
     context.CueExports.buildFormatted = (society, ...args) => society === 'PRS'
@@ -77,7 +83,8 @@ function fixture(type, count) {
 
 async function generate(context, society, input) {
   const { project, episode, cues, works, artists } = input;
-  return context.CueExports.buildFormatted(society, project, episode, cues, works, artists);
+  const options = { membershipPolicy: society === 'IPRS' ? 'confirmed-members-v1' : 'as-entered-v1' };
+  return context.CueExports.buildFormatted(society, project, episode, cues, works, artists, options);
 }
 
 function cellsWithContent(sheet) {
@@ -337,10 +344,12 @@ for (const society of societies) {
       const height = row => Number(attributes(xml.match(new RegExp(`<row\\b[^>]*\\br="${row}"[^>]*`))[0]).ht);
       const headerRow = formatted.CueExports.mappingFor(society, input.project).headerRow;
       assert.equal(height(headerRow), expected.headerHeight, type + ': header height');
-      assert.equal(height(headerRow + 1), expected.bodyHeight, type + ': first cue height');
+      if (society === 'ASCAP') assert.ok(height(headerRow + 1) >= expected.bodyHeight, type + ': wrapped credits never shrink the reference height');
+      else assert.equal(height(headerRow + 1), expected.bodyHeight, type + ': first cue height');
       // IPRS keeps separator row addresses but collapses their visible height.
       const expandedContributorRow = headerRow + (society === 'IPRS' ? 21 : 20);
-      assert.equal(height(expandedContributorRow), expected.bodyHeight, type + ': expanded cue height');
+      if (society === 'ASCAP') assert.ok(height(expandedContributorRow) >= expected.bodyHeight, type + ': expanded wrapped credits have room to grow');
+      else assert.equal(height(expandedContributorRow), expected.bodyHeight, type + ': expanded cue height');
       if (society === 'IPRS') assert.equal(height(headerRow + 20), 0, type + ': no visible gap between songs');
       const headerCell = (society === 'IPRS' ? 'A' : society === 'PRS' ? 'D' : 'B') + headerRow;
       const dataCell = (society === 'IPRS' ? 'H' : 'E') + (headerRow + 1);

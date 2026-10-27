@@ -57,8 +57,8 @@ function fixture(type, counts) {
   return { project, works, cues, artists: [] };
 }
 
-async function exported(input, exporter = context) {
-  const bytes = await exporter.CueExports.buildFormatted('PRS', input.project, input.project.type === 'Movie' ? null : 7, input.cues, input.works, input.artists);
+async function exported(input, exporter = context, options = { membershipPolicy: 'confirmed-members-v1' }) {
+  const bytes = await exporter.CueExports.buildFormatted('PRS', input.project, input.project.type === 'Movie' ? null : 7, input.cues, input.works, input.artists, options);
   const workbook = XLSX.read(bytes, { type: 'array', cellNF: true });
   const zip = await JSZip.loadAsync(bytes);
   const xml = await zip.file('xl/worksheets/sheet1.xml').async('string');
@@ -78,7 +78,7 @@ async function exported(input, exporter = context) {
   };
 }
 
-test('PRS preserves outside-table cells, formulas and merges when moving the singleton footer', async () => {
+test('historical PRS preserves outside-table cells, formulas and merges when moving the singleton footer', async () => {
   const zip = await JSZip.loadAsync(Buffer.from(context.CueExportTemplateData.PRS, 'base64'));
   let xml = await zip.file('xl/worksheets/sheet1.xml').async('string');
   const sentinels = {
@@ -136,12 +136,12 @@ function assertMergeIntegrity(output) {
   }
 }
 
-function assertMetadata(output, input, counts) {
+function assertMetadata(output, input, counts, allCues = false) {
   const { project } = input, isMovie = project.type === 'Movie';
   const expected = {
     C7: project.title, G7: 'Independent Studio', J7: 'India', L7: isMovie ? project.duration : '00:31:17',
     C9: isMovie ? project.title : '@Episode Seven', G9: '000-345', J9: '2026',
-    L9: time(counts.reduce((sum, _, index) => sum + 367 + index, 0)),
+    L9: time(allCues ? input.cues.reduce((sum, cue) => sum + cue.duration, 0) : counts.reduce((sum, _, index) => sum + 367 + index, 0)),
     G11: 'Director A', J11: isMovie ? '2026-09-25' : '2026-09-26', C13: '00078',
     G13: 'Actor A, Actor B', J13: isMovie ? 'Movie' : 'Episode', C15: '+Alternate Production', G15: 'Example Channel',
   };
@@ -165,8 +165,40 @@ const cases = [
 ];
 
 for (const type of ['Movie', 'Series']) {
+  test(`PRS ${type} fresh exports preserve reference merges for all selected cues and every raw affiliation`, async () => {
+    const counts = [1, 3, 1, 4], input = fixture(type, counts), snapshot = structuredClone(input);
+    const output = await exported(input, context, {});
+    assertMetadata(output, input, counts, true);
+    assertMergeIntegrity(output);
+    let row = 19;
+    for (const [cueIndex, cue] of input.cues.entries()) {
+      const work = input.works.find(work => work.id === cue.workId), first = row, last = first + work.parties.length - 1;
+      assert.equal(output.sheet['A' + first]?.v, cueIndex + 1);
+      assert.equal(output.sheet['B' + first]?.v, work.title);
+      assert.equal(output.sheet['K' + first]?.v, time(cue.duration));
+      assert.equal(output.sheet['L' + first]?.v ?? '', work.societies?.PRS || '');
+      assert.ok(output.merges.includes(`B${first}:C${last}`));
+      if (work.parties.length > 1) for (const column of 'AJKL') assert.ok(output.merges.includes(`${column}${first}:${column}${last}`));
+      for (const party of work.parties) {
+        assert.equal(output.sheet['E' + row]?.v, party.name);
+        assert.equal(output.sheet['I' + row]?.v, party.society);
+        assert.equal(output.sheet['H' + row]?.v, party.share / 100);
+        assert.equal(output.sheet['G' + row]?.v ?? '', party.ipi || '');
+        assert.ok(output.merges.includes(`E${row}:F${row}`));
+        for (const column of 'ABCDEFGHIJKL') {
+          if (row === first) assert.deepEqual(output.edge(column + row, 'top'), { style: 'medium', color: 'FF000000' });
+          if (row === last) assert.deepEqual(output.edge(column + row, 'bottom'), { style: 'medium', color: 'FF000000' });
+        }
+        row++;
+      }
+    }
+    for (const column of 'ABCDEFGHIJKL') assert.ok(output.sheet[column + row]?.v == null);
+    assert.equal(output.sheet['A' + (row + 1)]?.v, 'AMISHNA MUSIC');
+    assert.deepEqual(input, snapshot);
+  });
+
   for (const [description, counts] of cases) {
-    test(`PRS ${type} uses reference merges and preserves values for ${description}`, async () => {
+    test(`historical PRS ${type} uses reference merges and preserves values for ${description}`, async () => {
       const input = fixture(type, counts), snapshot = structuredClone(input);
       const output = await exported(input);
       assert.deepEqual(input, snapshot, 'Layout formatting does not mutate source records');

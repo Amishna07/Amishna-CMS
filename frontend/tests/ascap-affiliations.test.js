@@ -80,7 +80,7 @@ for (const type of ['Movie', 'Series']) {
         assert.equal(sheet['D' + row].v, cue.duration / 86400);
         assert.equal(sheet['D' + row].w, '0:' + String(Math.floor(cue.duration / 60)).padStart(2, '0') + ':' + String(cue.duration % 60).padStart(2, '0'));
         assert.equal(sheet['E' + row].v, expectedWriters);
-        assert.equal(sheet['F' + row].v, 'NS Publisher (NS) 50%\nUnknown Publisher 30%');
+        assert.equal(sheet['F' + row].v, 'NS Publisher (Non Member) 50%\nUnknown Publisher 30%');
         assert.equal(sheet['G' + row].v, data.works[index].societies.ASCAP);
         assert.equal(sheet['G' + row].t, 's', 'leading-zero work codes remain text');
       }
@@ -98,8 +98,11 @@ test('ASCAP can export cues with no ASCAP members while strict eligibility remai
   const data = fixture(), before = structuredClone(data);
   data.works[0].parties = data.works[0].parties.filter(party => party.society !== 'ASCAP');
   const original = structuredClone(data);
-  assert.equal(S.scope(data.cues, data.works, 'ASCAP', data.artists).cues.length, 0);
-  await assert.rejects(exportSheet(data, 'ASCAP', {}), /No cues with confirmed ASCAP/);
+  assert.deepEqual(S.scope(data.cues, data.works, 'ASCAP', data.artists).works[0].parties.map(party => party.name), ['NS Publisher']);
+  const unconfirmed = structuredClone(data);
+  unconfirmed.works[0].parties = unconfirmed.works[0].parties.filter(party => party.society !== 'NS');
+  assert.equal(S.scope(unconfirmed.cues, unconfirmed.works, 'ASCAP', unconfirmed.artists).cues.length, 0);
+  await assert.rejects(exportSheet(unconfirmed, 'ASCAP', { membershipPolicy: 'confirmed-members-v1' }), /No cues with confirmed ASCAP/);
   const scoped = S.scope(data.cues, data.works, 'ASCAP', data.artists, recorded);
   assert.deepEqual(scoped.cues, data.cues);
   assert.equal(scoped.works[0]._exportSociety, 'ASCAP');
@@ -111,7 +114,7 @@ test('ASCAP can export cues with no ASCAP members while strict eligibility remai
   assert.equal(sheet.B10.v, 'Cue 1');
   assert.ok(!sheet.E10.v.includes('(ASCAP)'));
   assert.ok(sheet.E10.v.includes('Unknown Writer 10%'));
-  assert.ok(sheet.F10.v.includes('NS Publisher (NS)'));
+  assert.ok(sheet.F10.v.includes('NS Publisher (Non Member)'));
   assert.deepEqual(data, original);
   assert.deepEqual(data.artists, before.artists);
 });
@@ -137,7 +140,7 @@ test('recorded affiliations retain PRS credits while IPRS still filters contribu
     const { sheet } = await exportSheet(data, society);
     const text = Object.values(sheet).map(cell => cell?.v).join('\n');
     assert.ok(!text.includes('ASCAP Writer'));
-    assert.ok(!text.includes('NS Publisher'));
+    assert.ok(text.includes('NS Publisher'), 'explicit non-society ownership credits remain included');
     assert.ok(!text.includes('Unknown Writer'));
     assert.ok(!text.includes('Unknown Publisher'));
     assert.ok(text.includes(society === 'IPRS' ? 'IPRS Composer' : 'PRS Author'));

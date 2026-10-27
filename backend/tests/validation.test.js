@@ -38,6 +38,50 @@ test('save revisions must be nonnegative safe integers', () => {
   for (const expectedRevision of [-1, 0.1, '1', Number.MAX_SAFE_INTEGER]) assert.throws(() => validateSave({ workspace: fixture(), expectedRevision }), /safe integer/);
   assert.equal(validateSave({ workspace: fixture(), expectedRevision: 0 }).expectedRevision, 0);
 });
+
+test('PRS Work ID and Tune Code cannot identify different songs across either storage alias', () => {
+  for (const [first, second] of [
+    [{ tuneCode: '  AbC-001 ' }, { societies: { PRS: 'abc-001' } }],
+    [{ societies: { PRS: '  AbC-001 ' } }, { tuneCode: 'abc-001' }],
+  ]) {
+    const value = fixture();
+    Object.assign(value.works[0], first);
+    value.works.push({ id: 'other-song', title: 'Other song', ...second });
+    const before = structuredClone(value);
+    assert.throws(() => validateWorkspace(value), /Duplicate PRS Work ID \/ Tune Code/);
+    assert.deepEqual(value, before);
+  }
+});
+
+test('the same PRS identifier in both song fields validates without changing its formatting', () => {
+  const value = fixture();
+  Object.assign(value.works[0], { tuneCode: '  ABC-001 ', societies: { PRS: 'abc-001' } });
+  const before = structuredClone(value);
+  assert.equal(validateWorkspace(value), value);
+  assert.deepEqual(value, before);
+});
+
+test('legacy differing PRS aliases are preserved and neither value can belong to another song', () => {
+  const value = fixture();
+  Object.assign(value.works[0], { tuneCode: 'TUNE-OLD', societies: { PRS: 'PRS-OLD' } });
+  const before = structuredClone(value);
+  assert.equal(validateWorkspace(value), value);
+  assert.deepEqual(value, before);
+  for (const identifier of ['TUNE-OLD', 'PRS-OLD']) {
+    const collision = structuredClone(value);
+    collision.works.push({ id: 'other-song', title: 'Other song', tuneCode: identifier });
+    assert.throws(() => validateWorkspace(collision), /Duplicate PRS Work ID \/ Tune Code/);
+  }
+});
+
+test('PRS-only legacy records validate and other societies retain independent identifier namespaces', () => {
+  const value = fixture();
+  value.works[0].societies = { PRS: '00123' };
+  value.works.push({ id: 'other-song', title: 'Other song', societies: { IPRS: '00123', ASCAP: '00123' } });
+  const before = structuredClone(value);
+  assert.equal(validateWorkspace(value), value);
+  assert.deepEqual(value, before);
+});
 test('large project and episode collections validate with original order preserved', () => {
   const value = fixture(); value.projects = []; value.cues = [];
   for (let i = 0; i < 500; i++) {

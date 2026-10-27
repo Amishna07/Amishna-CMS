@@ -149,13 +149,13 @@ test('frozen membership snapshots retain historical decisions after artist membe
   assert.equal(result.summary.IPRS.artists, 3);
 });
 
-test('generated IPRS and PRS worksheets contain only eligible contributor names and selected labels', async () => {
+test('historical confirmed-member IPRS and PRS worksheets contain only eligible contributor names and selected labels', async () => {
   const data = fixture(), before = JSON.stringify(data);
   for (const [society, names, absent, shareCells] of [
     ['IPRS', ['IPRS Writer', 'Dual Publisher', 'IPRS Singer'], ['PRS Writer', 'PRS Singer', 'PRS Only Song', 'Unknown Writer', 'ASCAP Writer'], [['J13', '20%'], ['J14', '25%']]],
     ['PRS', ['PRS Writer', 'Dual Publisher', 'PRS Only Song'], ['IPRS Writer', 'Unknown Writer', 'ASCAP Writer'], [['H19', .3], ['H20', .25]]],
   ]) {
-    const bytes = await context.CueExports.buildFormatted(society, project, null, data.cues, data.works, data.artists);
+    const bytes = await context.CueExports.buildFormatted(society, project, null, data.cues, data.works, data.artists, { membershipPolicy: 'confirmed-members-v1' });
     const workbook = XLSX.read(bytes, { type: 'array' }), sheet = workbook.Sheets[workbook.SheetNames[0]];
     const text = Object.values(sheet).map(cell => cell?.v).filter(value => typeof value === 'string').join('\n');
     for (const name of names) assert.ok(text.includes(name), society + ' missing ' + name);
@@ -168,9 +168,9 @@ test('generated IPRS and PRS worksheets contain only eligible contributor names 
   assert.equal(JSON.stringify(data), before);
 });
 
-test('ASCAP retains its existing 200-percent convention and excludes unconfirmed label fallbacks', async () => {
+test('historical confirmed-member ASCAP retains its 200-percent convention and excludes unconfirmed label fallbacks', async () => {
   const data = fixture();
-  const bytes = await context.CueExports.buildFormatted('ASCAP', project, null, data.cues, data.works, data.artists);
+  const bytes = await context.CueExports.buildFormatted('ASCAP', project, null, data.cues, data.works, data.artists, { membershipPolicy: 'confirmed-members-v1' });
   const workbook = XLSX.read(bytes, { type: 'array' }), sheet = workbook.Sheets[workbook.SheetNames[0]];
   assert.equal(sheet.E10.v, 'ASCAP Writer (ASCAP) 30%');
   assert.ok(!sheet.F10?.v);

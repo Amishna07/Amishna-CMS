@@ -253,7 +253,7 @@ for (const society of ['IPRS', 'PRS', 'ASCAP']) {
     assert.equal(build.project.periods[0].company, 'Studio Two');
     assert.equal(build.project.ascap.address, 'Office');
     assert.deepEqual(build.cues, input.cues);
-    const membershipPolicy = ['PRS', 'ASCAP'].includes(society) ? 'recorded-affiliations-v1' : 'confirmed-members-v1';
+    const membershipPolicy = ['PRS', 'ASCAP'].includes(society) ? 'as-entered-v1' : 'confirmed-members-v1';
     assert.deepEqual(build.options, { membershipPolicy });
     assert.deepEqual(build.works, globalThis.CueSocieties.scope(input.cues, input.works, society, [], { membershipPolicy }).works);
     assert.equal(harness.commits, 1);
@@ -415,8 +415,8 @@ test('preview and saved export history match society-scoped rows while retaining
   input.episodes[1].cues = input.cues;
   const before = structuredClone(input), harness = dialogHarness();
   harness.dialog.open(input);
-  assert.match(harness.html, /IPRS artists included: 2/);
-  assert.match(harness.html, /PRS-only artists excluded from IPRS: <strong>1/);
+  assert.match(harness.html, /PRS and ASCAP include all selected cues and contributors/);
+  assert.match(harness.html, /IPRS includes its members and contributors marked Non-society/);
   harness.clickFormat('IPRS');
   await until(() => harness.downloads.length === 1);
   assert.equal(harness.builds[0].cues.length, 1);
@@ -469,7 +469,7 @@ function actualWorkbookBuilder() {
 }
 
 for (const mode of ['single', 'movie-zip', 'episodes-zip', 'episodes-files']) {
-  test(`real ${mode} exports apply IPRS row cleanup and society-specific non-member labels to every workbook`, async () => {
+  test(`real ${mode} exports apply IPRS row cleanup and preserve saved affiliation text in PRS and ASCAP`, async () => {
     const input = sourceOptions();
     input.works = Array.from({ length: 24 }, (_, index) => ({
       id: 'W' + index, title: 'Track ' + index, isrc: 'IN00000000' + String(index).padStart(2, '0'),
@@ -556,7 +556,7 @@ for (const combined of [false, true]) test(`ASCAP is enabled without ASCAP membe
   const button = harness.html.match(/<button\b[^>]*data-ced-format="ASCAP"[^>]*>/)?.[0];
   assert.ok(button);
   assert.doesNotMatch(button, /\bdisabled\b/);
-  assert.match(harness.html, /ASCAP includes all selected cues with their recorded affiliations/);
+  assert.match(harness.html, /PRS and ASCAP include all selected cues and contributors/);
   if (combined) harness.submit(); else harness.clickFormat('ASCAP');
   await until(() => harness.downloads.length === 1);
   let bytes = harness.downloads[0].binary;
@@ -571,7 +571,7 @@ for (const combined of [false, true]) test(`ASCAP is enabled without ASCAP membe
   assert.equal(sheet.F10.v, 'Dual Publisher (IPRS/PRS) 100%');
   assert.equal(sheet.D10.v, 90 / 86400);
   const record = harness.workspace.exports.find(record => record.society === 'ASCAP');
-  assert.equal(record.snapshot.membershipPolicy, 'recorded-affiliations-v1');
+  assert.equal(record.snapshot.membershipPolicy, 'as-entered-v1');
   assert.equal(record.membershipSummary.ASCAP.artists, 0);
   assert.equal(record.membershipSummary.includedCues, 1);
   assert.deepEqual(record.snapshot.works[0].parties.map(p => [p.name, p.share, p.society]), input.works[0].parties.map(p => [p.name, p.share, p.society]));
@@ -599,32 +599,40 @@ test('saved ASCAP snapshots retain their original confirmed-member export policy
   const harness = dialogHarness(), input = iprsPrsOnlyOptions();
   harness.dialog.open({ ...input, membershipPolicy: 'confirmed-members-v1' });
   assert.match(harness.html.match(/<button\b[^>]*data-ced-format="ASCAP"[^>]*>/)[0], /\bdisabled\b/);
-  assert.match(harness.html, /this saved ASCAP export use membership filtering/);
+  assert.match(harness.html, /saved PRS \/ ASCAP export uses its original membership filtering/);
 });
 
-test('PRS downloads without PRS members and preserves IPRS and non-member credits in a real workbook', async () => {
+for (const society of ['PRS', 'ASCAP']) test(society + ' downloads without local society members, exports NS as Non Member, and preserves raw NS in its snapshot', async () => {
   const input = sourceOptions();
   input.works[0].parties = [
-    { name: 'Sanket S Patil', role: 'Composer', society: 'IPRS', ipi: '1360105989', share: 50 },
-    { name: 'ZeeTV', role: 'Publisher', society: 'Non Member', ipi: '', share: 50 },
+    { name: 'Test IPRS Composer', role: 'Composer', society: 'IPRS', ipi: '0000000123', share: 50 },
+    { name: 'Test Publisher', role: 'Publisher', society: 'NS', ipi: '', share: 50 },
   ];
   const before = structuredClone(input), harness = dialogHarness({ build: actualWorkbookBuilder() });
   harness.dialog.open(input);
-  assert.doesNotMatch(harness.html.match(/<button\b[^>]*data-ced-format="PRS"[^>]*>/)[0], /\bdisabled\b/);
-  harness.clickFormat('PRS');
+  assert.doesNotMatch(harness.html.match(new RegExp('<button\\b[^>]*data-ced-format="' + society + '"[^>]*>'))[0], /\bdisabled\b/);
+  harness.clickFormat(society);
   await until(() => harness.downloads.length === 1);
   const XLSX = require('../public/vendor/xlsx.full.min.js');
   const workbook = XLSX.read(harness.downloads[0].binary, { type: 'array' });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  assert.equal(sheet.E19.v, 'Sanket S Patil');
-  assert.equal(sheet.I19.v, 'IPRS');
-  assert.equal(sheet.G19.v, '1360105989');
-  assert.equal(sheet.H19.v, 0.5);
-  assert.equal(sheet.E20.v, 'ZeeTV');
-  assert.equal(sheet.I20.v, 'Non Member');
-  assert.ok(!sheet.G20?.v);
-  assert.equal(sheet.H20.v, 0.5);
-  assert.equal(harness.workspace.exports[0].snapshot.membershipPolicy, 'recorded-affiliations-v1');
+  if (society === 'PRS') {
+    assert.equal(sheet.E19.v, 'Test IPRS Composer');
+    assert.equal(sheet.I19.v, 'IPRS');
+    assert.equal(sheet.G19.v, '0000000123');
+    assert.equal(sheet.H19.v, 0.5);
+    assert.equal(sheet.E20.v, 'Test Publisher');
+    assert.equal(sheet.I20.v, 'Non Member');
+    assert.ok(!sheet.G20?.v);
+    assert.equal(sheet.H20.v, 0.5);
+  } else {
+    assert.equal(sheet.E10.v, 'Test IPRS Composer (IPRS) 100%');
+    assert.equal(sheet.F10.v, 'Test Publisher (Non Member) 100%');
+  }
+  assert.equal(harness.workspace.exports[0].snapshot.membershipPolicy, 'as-entered-v1');
+  assert.deepEqual(harness.workspace.exports[0].snapshot.works[0].parties.map(party => [party.name, party.society, party.share]), [
+    ['Test IPRS Composer', 'IPRS', 50], ['Test Publisher', 'NS', 50],
+  ]);
   assert.deepEqual(input, before);
 });
 
@@ -643,6 +651,93 @@ test('ASCAP cannot download an empty project', () => {
   const harness = dialogHarness();
   harness.dialog.open({ project: { title: 'Empty', type: 'Movie' }, cues: [], works: [] });
   assert.match(harness.html.match(/<button\b[^>]*data-ced-format="ASCAP"[^>]*>/)[0], /\bdisabled\b/);
+});
+
+for (const society of ['PRS', 'ASCAP']) test(society + ' exports a selected cue with no contributor metadata instead of blocking or omitting it', async () => {
+  const input = sourceOptions();
+  input.works[0].parties = [];
+  const before = structuredClone(input), harness = dialogHarness({ build: actualWorkbookBuilder() });
+  harness.dialog.open(input);
+  assert.match(harness.html, /missing contributor details stay blank/);
+  assert.doesNotMatch(harness.html, /PRS artists:|ASCAP artists:/);
+  harness.clickFormat(society);
+  await until(() => harness.downloads.length === 1 || harness.html.includes('Check these details') || harness.html.includes('Export could not be completed'));
+  assert.equal(harness.downloads.length, 1, harness.html);
+  const XLSX = require('../public/vendor/xlsx.full.min.js');
+  const workbook = XLSX.read(harness.downloads[0].binary, { type: 'array' }), sheet = workbook.Sheets[workbook.SheetNames[0]];
+  if (society === 'PRS') {
+    assert.equal(sheet.B19.v, 'Song');
+    assert.equal(sheet.K19.v, '00:01:30');
+    for (const column of ['D', 'E', 'G', 'H', 'I']) assert.ok(!sheet[column + '19']?.v);
+  } else {
+    assert.equal(sheet.B10.v, 'Song');
+    assert.equal(sheet.D10.v, 90 / 86400);
+    assert.ok(!sheet.E10?.v);
+    assert.ok(!sheet.F10?.v);
+  }
+  const record = harness.workspace.exports[0];
+  assert.equal(record.count, 1);
+  assert.equal(record.snapshot.membershipPolicy, 'as-entered-v1');
+  assert.deepEqual(record.snapshot.works[0].parties, []);
+  assert.deepEqual(input, before);
+});
+
+for (const society of ['PRS', 'ASCAP']) test(society + ' copies arbitrary saved societies and unknown contributor roles while leaving missing shares blank', async () => {
+  const input = sourceOptions();
+  input.works[0].parties = [
+    { name: 'GEMA Composer', role: 'Composer', society: 'GEMA', ipi: '0000123', share: null },
+    { name: 'Custom Role Writer', role: 'Arranger', society: 'bMaI; GEMA & other', ipi: '0000456', share: 25 },
+    { name: 'Mixed Writer', role: 'Lyricist', society: 'prs, IPRS / ASCAP', share: 0 },
+    { name: 'Independent Publisher', role: 'Publisher', society: 'Non-society', share: '' },
+    { name: 'Blank Society Writer', role: 'Composer', society: '', artistId: 'stale', share: null },
+  ];
+  input.artists = [{ id: 'stale', name: 'Blank Society Writer', societies: ['IPRS'] }];
+  const before = structuredClone(input), harness = dialogHarness({ build: actualWorkbookBuilder() });
+  harness.dialog.open(input);
+  harness.clickFormat(society);
+  await until(() => harness.downloads.length === 1 || harness.html.includes('Check these details') || harness.html.includes('Export could not be completed'));
+  assert.equal(harness.downloads.length, 1, harness.html);
+  const XLSX = require('../public/vendor/xlsx.full.min.js');
+  const workbook = XLSX.read(harness.downloads[0].binary, { type: 'array' }), sheet = workbook.Sheets[workbook.SheetNames[0]];
+  if (society === 'PRS') {
+    input.works[0].parties.forEach((party, index) => {
+      const row = 19 + index;
+      assert.equal(sheet['E' + row].v, party.name);
+      assert.equal(sheet['I' + row]?.v || '', party.name === 'Independent Publisher' ? 'Non Member' : party.society);
+      if (party.share === null || party.share === '') assert.ok(!sheet['H' + row]?.v);
+      else assert.equal(sheet['H' + row].v, party.share / 100);
+    });
+    assert.equal(sheet.G19.v, '0000123');
+  } else {
+    assert.equal(sheet.E10.v, 'GEMA Composer (GEMA)\nCustom Role Writer (bMaI; GEMA & other) 50%\nMixed Writer (prs, IPRS / ASCAP) 0%\nBlank Society Writer');
+    assert.equal(sheet.F10.v, 'Independent Publisher (Non Member)');
+  }
+  assert.equal(harness.workspace.exports[0].count, 1);
+  assert.deepEqual(harness.workspace.exports[0].snapshot.works[0].parties.map(party => [party.name, party.share, party.society]), input.works[0].parties.map(party => [party.name, party.share, party.society]));
+  assert.deepEqual(input, before);
+});
+
+test('IPRS keeps ownership validation when PRS and ASCAP allow incomplete saved contributors', async () => {
+  const input = sourceOptions(), harness = dialogHarness();
+  input.works[0].parties = [{ name: 'IPRS Composer', role: 'Composer', society: 'IPRS', share: null }];
+  const before = structuredClone(input);
+  harness.dialog.open(input);
+  harness.clickFormat('IPRS');
+  await until(() => harness.html.includes('every contributor needs a name and share'));
+  assert.equal(harness.builds.length, 0);
+  assert.equal(harness.downloads.length, 0);
+  assert.deepEqual(input, before);
+});
+
+for (const society of ['PRS', 'ASCAP']) for (const membershipPolicy of ['recorded-affiliations-v1', 'confirmed-members-v1']) test('saved ' + society + ' export keeps ' + membershipPolicy + ' on regeneration', async () => {
+  const input = sourceOptions(), before = structuredClone(input), harness = dialogHarness({ build: actualWorkbookBuilder() });
+  harness.dialog.open({ ...input, membershipPolicy });
+  harness.clickFormat(society);
+  await until(() => harness.downloads.length === 1 || harness.html.includes('Check these details') || harness.html.includes('Export could not be completed'));
+  assert.equal(harness.downloads.length, 1, harness.html);
+  assert.equal(harness.builds[0].options.membershipPolicy, membershipPolicy);
+  assert.equal(harness.workspace.exports[0].snapshot.membershipPolicy, membershipPolicy);
+  assert.deepEqual(input, before);
 });
 
 for (const society of ['IPRS', 'PRS', 'ASCAP']) test(society + ' range keeps sparse episodes, metadata and formatting separate and regenerates every saved tab', async () => {

@@ -144,7 +144,7 @@ test('ZIP traversal names are rejected and valid high-compression workbooks are 
   assert.equal((await safety.read(upload('repetitive.xlsx', bytes))).Sheets.Data.A1.v, 'Name');
 });
 
-for (const type of ['Movie', 'Series']) for (const society of ['IPRS', 'PRS', 'ASCAP']) test(`${type} ${society} preserves hostile text as data, filters memberships, and does not mutate input`, async () => {
+for (const type of ['Movie', 'Series']) for (const society of ['IPRS', 'PRS', 'ASCAP']) test(`${type} ${society} preserves hostile text as data and source records with its current affiliation policy`, async () => {
   const dangerous = '=HYPERLINK("https://example.test","TEST") <script>alert("TEST")</script> & गीत _x0041_\u0001';
   const project = { id: 'project', type, title: 'Film ../ "<TEST>" मराठी', periods: [], episodes: [{ number: 6, title: dangerous, duration: '01:00:00' }], duration: '02:00:00' };
   const works = [{ id: 'work', title: dangerous, artist: 'Singer', isrc: 'IN1234567890', societies: { IPRS: 'I-1', PRS: 'P-1', ASCAP: 'A-1' }, parties: [
@@ -163,7 +163,15 @@ for (const type of ['Movie', 'Series']) for (const society of ['IPRS', 'PRS', 'A
   assert.equal(sheet[titleCell].f, undefined);
   const values = Object.values(sheet).map(cell => cell?.v ?? '').join('\n');
   if (society === 'IPRS') { assert.ok(values.includes('IPRS Only'));assert.ok(!Object.values(sheet).some(cell => cell?.v === 'PRS Only'));assert.ok(values.includes('Dual ')); }
-  if (society === 'PRS') { assert.ok(values.includes('PRS Only'));assert.ok(!values.includes('IPRS Only')); }
+  if (society === 'PRS') {
+    assert.ok(values.includes('PRS Only'));assert.ok(values.includes('IPRS Only'));
+    assert.equal(sheet.I19.v, 'IPRS');assert.equal(sheet.I20.v, 'PRS');assert.equal(sheet.I21.v, 'IPRS/PRS/ASCAP');
+  }
+  if (society === 'ASCAP') {
+    assert.ok(sheet.E10.v.includes('IPRS Only (IPRS) 50%'));
+    assert.ok(sheet.E10.v.includes('PRS Only (PRS) 50%'));
+    assert.ok(sheet.F10.v.includes('(IPRS/PRS/ASCAP) 100%'));
+  }
   const name = context.CueExportFilename(project, 6, society);
   assert.ok(!/[<>:"/\\|?*]/.test(name));
   assert.ok(name.endsWith((type === 'Series' ? '_Episode_06' : '') + '_' + society + '.xlsx'));

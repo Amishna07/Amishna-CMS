@@ -64,7 +64,7 @@ test('PRS format retains registry-only society affiliations, leading-zero IPI an
   assert.equal(sheet.H19.v, 1);
 });
 
-test('missing contributor shares fail validation while explicit zero shares remain valid', () => {
+test('legacy contributor validation requires shares while explicit zero shares remain valid', () => {
   const input = fixture();
   for (const share of [null, '', undefined, '   ']) {
     input.works[0].parties[1] = { name: 'Publisher', role: 'Publisher', society: 'Non Member', share };

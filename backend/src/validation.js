@@ -102,9 +102,20 @@ function validateWorkspace(workspace) {
   }
   uniqueText(workspace.works, 'isrc', 'Work ISRC');
   uniqueText(workspace.works, 'iswc', 'Work ISWC');
-  uniqueText(workspace.works, 'tuneCode', 'Work Tune Code');
+  // Tune Code and PRS Work ID are names for the same identifier. Reserve both
+  // legacy storage locations for their song without rewriting imported values.
+  const prsIdentifiers = new Map();
+  for (const work of workspace.works) {
+    for (const original of [work.tuneCode, work.societies?.PRS]) {
+      const value = normalized(original);
+      if (!value) continue;
+      const owner = prsIdentifiers.get(value);
+      if (owner !== undefined && owner !== work.id) invalid(`Duplicate PRS Work ID / Tune Code: ${original}.`);
+      prsIdentifiers.set(value, work.id);
+    }
+  }
   uniqueText(workspace.artists || [], 'ipi', 'artist IPI');
-  for (const society of ['IPRS','PRS','ASCAP']) {
+  for (const society of ['IPRS','ASCAP']) {
     const seen = new Set();
     for (const work of workspace.works) {
       const value = normalized(work.societies?.[society]);

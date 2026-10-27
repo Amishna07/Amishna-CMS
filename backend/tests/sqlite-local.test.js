@@ -10,11 +10,25 @@ const { SQLiteRepository } = require('../src/repository');
 const { SQLiteAuthStore, hashPassword } = require('../src/auth');
 const { createApp } = require('../src/app');
 
+function cleanupAfter(t) {
+  const callbacks = [];
+  t.after(async () => {
+    const errors = [];
+    for (const callback of callbacks.reverse()) {
+      try { await callback(); } catch (error) { errors.push(error); }
+    }
+    if (errors.length) throw new AggregateError(errors, 'Test cleanup failed');
+  });
+  return callback => callbacks.push(callback);
+}
+
 test('local accounts, sessions and workspace survive restart without MongoDB', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-local-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  cleanup(() => fs.rm(directory, { recursive: true, force: true }));
   const file = path.join(directory, 'amishna.sqlite');
   let repository = new SQLiteRepository({ file });
+  cleanup(() => repository?.close());
   let accounts = new SQLiteAuthStore(repository);
   assert.equal(await accounts.hasAdmin(), false);
   const administrator = await accounts.createUser({ name: 'Owner', email: 'owner@example.com', role: 'admin', active: true,
@@ -22,9 +36,9 @@ test('local accounts, sessions and workspace survive restart without MongoDB', a
   await accounts.createSession({ _id: 'session', userId: administrator._id, expiresAt: new Date(Date.now() + 60000) });
   await repository.put({ version: 1, title: 'Offline workspace' }, 0);
   await repository.close();
+  repository = null;
 
   repository = new SQLiteRepository({ file });
-  t.after(() => repository.close());
   accounts = new SQLiteAuthStore(repository);
   assert.equal(await accounts.hasAdmin(), true);
   assert.equal((await accounts.findUser('owner@example.com'))._id, administrator._id);
@@ -37,30 +51,32 @@ test('local accounts, sessions and workspace survive restart without MongoDB', a
 });
 
 test('SQLite keeps separate workspaces and rejects stale patches atomically', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-local-workspaces-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  cleanup(() => fs.rm(directory, { recursive: true, force: true }));
   const file = path.join(directory, 'amishna.sqlite');
   const first = new SQLiteRepository({ file, workspaceId: 'series' });
-  t.after(() => first.close());
+  cleanup(() => first.close());
   const original = { version: 1, works: [], projects: [], cues: [], clients: [], imports: [], exports: [], profiles: [], activity: [], preferences: { theme: 'light' } };
   await first.put(original, 0);
   await assert.rejects(first.patch([{ op: 'set', path: ['preferences'], value: { theme: 'dark' } }], 0), error => error.status === 409);
   assert.equal((await first.get()).workspace.preferences.theme, 'light');
   const second = new SQLiteRepository({ file, workspaceId: 'movie' });
-  t.after(() => second.close());
+  cleanup(() => second.close());
   assert.deepEqual(await second.get(), { workspace: null, revision: 0 });
   assert.equal((await first.patch([{ op: 'set', path: ['preferences'], value: { theme: 'dark' } }], 1)).revision, 2);
   assert.equal((await first.get()).workspace.preferences.theme, 'dark');
 });
 
 test('local administrator setup and sign-in use SQLite through the API', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-local-auth-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  cleanup(() => fs.rm(directory, { recursive: true, force: true }));
   const repository = new SQLiteRepository({ file: path.join(directory, 'amishna.sqlite') });
-  t.after(() => repository.close());
+  cleanup(() => repository.close());
   const server = http.createServer(createApp({ repository, logger: { error() {} } }));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
+  cleanup(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
   const base = 'http://127.0.0.1:' + server.address().port;
   const body = JSON.stringify({ name: 'Owner', email: 'owner@example.com', password: 'correct horse battery staple' });
   const setup = await fetch(base + '/api/auth/setup', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body });
@@ -77,11 +93,12 @@ test('local administrator setup and sign-in use SQLite through the API', async t
 });
 
 test('database download creates an integrity-checked dated SQLite snapshot', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-local-backup-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  cleanup(() => fs.rm(directory, { recursive: true, force: true }));
   const backupDirectory = path.join(directory, 'Database');
   const repository = new SQLiteRepository({ file: path.join(directory, 'amishna.sqlite'), backupDirectory });
-  t.after(() => repository.close());
+  cleanup(() => repository.close());
   await fs.mkdir(backupDirectory);
   await fs.writeFile(path.join(backupDirectory, 'Amishna_Database_2020-01-01_00-00-00-000.sqlite'), 'old snapshot');
   const first = { version: 1, title: 'Before the backup' };
@@ -91,7 +108,7 @@ test('database download creates an integrity-checked dated SQLite snapshot', asy
     auth: { handle: async () => false, requireUser: async () => ({ id: 'local-owner', role: actorRole }) },
     logger: { error() {} } }));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
+  cleanup(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
   const base = 'http://127.0.0.1:' + server.address().port;
   assert.equal((await fetch(base + '/api/database/backup')).status, 405);
   const response = await fetch(base + '/api/database/backup', { method: 'POST', headers: { Origin: base } });
@@ -106,20 +123,22 @@ test('database download creates an integrity-checked dated SQLite snapshot', asy
   await repository.put({ version: 1, title: 'After the backup' }, 1);
   const { DatabaseSync } = require('node:sqlite');
   const snapshot = new DatabaseSync(path.join(backupDirectory, filename), { readOnly: true });
-  assert.equal(snapshot.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
-  assert.equal(JSON.parse(snapshot.prepare("SELECT data FROM workspaces WHERE workspace_id = 'main'").get().data).title, first.title);
-  snapshot.close();
+  try {
+    assert.equal(snapshot.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
+    assert.equal(JSON.parse(snapshot.prepare("SELECT data FROM workspaces WHERE workspace_id = 'main'").get().data).title, first.title);
+  } finally { snapshot.close(); }
   actorRole = 'editor';
   assert.equal((await fetch(base + '/api/database/backup', { method: 'POST', headers: { Origin: base } })).status, 403);
   assert.equal((await fs.readdir(backupDirectory)).length, 1);
 });
 
 test('snapshot retention deletes files older than seven days but always keeps the newest', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-backup-retention-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  cleanup(() => fs.rm(directory, { recursive: true, force: true }));
   const backupDirectory = path.join(directory, 'Database');
   const repository = new SQLiteRepository({ file: path.join(directory, 'amishna.sqlite'), backupDirectory });
-  t.after(() => repository.close());
+  cleanup(() => repository.close());
   await fs.mkdir(backupDirectory);
   const old = 'Amishna_Database_2026-10-01_10-00-00-000.sqlite';
   const newestOld = 'Amishna_Database_2026-10-03_10-00-00-000.sqlite';
@@ -136,8 +155,9 @@ test('snapshot retention deletes files older than seven days but always keeps th
 });
 
 test('legacy JSON migrates with a snapshot and record edits stay atomic', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-record-migration-'));
-  t.after(() => fs.rm(directory, {recursive: true, force: true}));
+  cleanup(() => fs.rm(directory, {recursive: true, force: true}));
   const file = path.join(directory, 'amishna.sqlite'), backupDirectory = path.join(directory, 'Database');
   const original = {version: 1, works: [{id: 'W1', title: 'Theme'}],
     projects: [{id: 'P1', title: 'Series', type: 'Series', episodes: [{number: 1, title: 'Pilot'}]}],
@@ -145,19 +165,21 @@ test('legacy JSON migrates with a snapshot and record edits stay atomic', async 
     clients: [], imports: [], exports: [], profiles: [], activity: []};
   const {DatabaseSync} = require('node:sqlite');
   const legacy = new DatabaseSync(file);
-  legacy.exec('CREATE TABLE workspaces(workspace_id TEXT PRIMARY KEY, revision INTEGER NOT NULL, updated_at TEXT NOT NULL, data TEXT NOT NULL)');
-  legacy.prepare('INSERT INTO workspaces VALUES (?, ?, ?, ?)').run('main', 4, '2026-10-18T10:00:00.000Z', JSON.stringify(original));
-  legacy.close();
+  try {
+    legacy.exec('CREATE TABLE workspaces(workspace_id TEXT PRIMARY KEY, revision INTEGER NOT NULL, updated_at TEXT NOT NULL, data TEXT NOT NULL)');
+    legacy.prepare('INSERT INTO workspaces VALUES (?, ?, ?, ?)').run('main', 4, '2026-10-18T10:00:00.000Z', JSON.stringify(original));
+  } finally { legacy.close(); }
   const repository = new SQLiteRepository({file, backupDirectory});
-  t.after(() => repository.close());
+  cleanup(() => repository.close());
   assert.deepEqual((await repository.get()).workspace.projects, original.projects);
   assert.deepEqual((await repository.get()).workspace.cues, original.cues);
   assert.equal((await repository.getManifest()).counts.episodes, 1);
   const backups = await fs.readdir(backupDirectory);
   assert.equal(backups.length, 1);
   const before = new DatabaseSync(path.join(backupDirectory, backups[0]), {readOnly: true});
-  assert.deepEqual(JSON.parse(before.prepare('SELECT data FROM workspaces WHERE workspace_id=?').get('main').data), original);
-  before.close();
+  try {
+    assert.deepEqual(JSON.parse(before.prepare('SELECT data FROM workspaces WHERE workspace_id=?').get('main').data), original);
+  } finally { before.close(); }
   const operation = {operationId: 'new-episode-0001', expectedRevision: 4, records: [
     {kind: 'episodes', id: 'P1|2', projectId: 'P1', number: 2, position: 1, value: {number: 2, title: 'Second'}},
     {kind: 'cues', id: 'C2', position: 1, value: {id: 'C2', projectId: 'P1', episode: 2, workId: 'W1', duration: 20}}
@@ -177,10 +199,11 @@ test('legacy JSON migrates with a snapshot and record edits stay atomic', async 
 });
 
 test('local API saves 1,000 episodes and 10,000 cues above the old 12 MB limit', async t => {
+  const cleanup = cleanupAfter(t);
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'amishna-local-scale-'));
-  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  cleanup(() => fs.rm(directory, { recursive: true, force: true }));
   const repository = new SQLiteRepository({ file: path.join(directory, 'amishna.sqlite') });
-  t.after(() => repository.close());
+  cleanup(() => repository.close());
   const workspace = { version: 1, works: [], projects: [], cues: [], clients: [], imports: [], exports: [], profiles: [], activity: [] };
   for (let projectIndex = 0; projectIndex < 10; projectIndex++) {
     const projectId = 'P' + projectIndex;
@@ -198,7 +221,7 @@ test('local API saves 1,000 episodes and 10,000 cues above the old 12 MB limit',
     auth: { handle: async () => false, requireUser: async () => ({ id: 'local-owner' }) },
     logger: { error() {} } }));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
+  cleanup(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
   const base = 'http://127.0.0.1:' + server.address().port;
   const saved = await fetch(base + '/api/workspace', { method: 'PUT', headers: { Origin: base, 'Content-Type': 'application/json' }, body });
   assert.equal(saved.status, 200);
