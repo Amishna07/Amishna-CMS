@@ -1,12 +1,12 @@
 # Amishna Music CMS — local edition
 
-The dashboard, API, accounts, and workspace run on this computer. Data is stored in `backend/data/amishna.sqlite` by default. The application does not need MongoDB, Vercel, Google Sheets, or an internet connection. The local frontend and API listen only on `127.0.0.1`.
+The dashboard, API, accounts, and workspace run on this computer. The standalone macOS app stores its SQLite data in `~/Library/Application Support/Amishna Music CMS/amishna.sqlite`; the development launchers use `backend/data/amishna.sqlite`. The application does not need MongoDB, Vercel, Google Sheets, or an internet connection.
 
 ## Start
 
-On this Mac, double-click `START AMISHNA MUSIC CMS.command`. It uses the local Node runtime in `.local-runtime` when present. On another computer, install Node.js 24 or later, then use the matching `.command`, `.bat`, or `.sh` launcher. No `npm install` is required for this edition because the SQLite driver is included with Node.js.
+On this Mac, double-click `Amishna Music CMS.app` in the project folder. It includes the CMS files and Node runtime, opens in its own macOS window, and manages its local service while the app is open. Quit the app to stop the service. The database stays in your Application Support folder. If the app bundle is missing, use `START AMISHNA MUSIC CMS.command`. On another computer, install Node.js 24 or later, then use the matching `.command`, `.bat`, or `.sh` launcher. No `npm install` is required for this edition because the SQLite driver is included with Node.js.
 
-Open <http://127.0.0.1:4175>. Set up a local administrator on the first visit, then sign in. Keep the terminal open while using the dashboard; close it with Ctrl+C. The browser is only the local interface. The server and SQLite file stay on this computer.
+Set up a local administrator on the first visit, then sign in. The server and SQLite file stay on this computer.
 
 `backend/.env` is optional. Copy `backend/.env.example` only if you need a different `SQLITE_PATH`, `WORKSPACE_ID`, or port. `frontend/.env` is also optional; the default proxy targets the local API on port 4000. The data folder and local configuration files are excluded from Git.
 
@@ -24,7 +24,7 @@ This repository does not contain the hosted MongoDB data or its account credenti
 
 The fixed workfile template is available in the app. Fill A1 (total duration), B1 (date), C1 (project name), E1 (episode or work number), then enter plays from row 3. Repeated plays of the same song combine into one cue with editable occurrences. Import and export history expires after seven days; projects, episodes, songs, artists, cues, and downloaded files remain.
 
-Exports can cover an episode range or all episodes, with separate worksheet tabs for each episode. Reference workbooks for IPRS, PRS, and ASCAP are bundled with the app. No web service is needed to create the exports.
+Exports can cover an episode range or all episodes, with separate worksheet tabs for each episode. Reference workbooks for IPRS, PRS, and ASCAP are bundled with the app. In the standalone macOS app, generated cue sheets are saved to `~/Downloads`; if a filename already exists, a numbered copy is saved so the earlier file is preserved. No web service is needed to create the exports.
 
 ## Storage and backups
 
@@ -32,7 +32,7 @@ SQLite stores projects, episodes, cues, songs, and history as separate indexed r
 
 When an older local JSON database is opened for the first time, the API creates a dated SQLite snapshot before migrating it. The original JSON row remains in that snapshot. If a browser tab still has an unsynced edit from the older save system, finish its sync and refresh that tab to switch to record saves.
 
-Use **Settings → Download full JSON backup** regularly and keep a copy outside this computer. **Download database (.sqlite)** creates a consistent SQLite snapshot while the app is running, saves it in the `Database/` folder beside the app with a date and time in its filename, and starts a browser download of the same file. Your browser chooses where that second copy goes. App-generated snapshots older than seven days are removed automatically at startup, after a new download, and daily while the app runs; the newest snapshot is always kept, even if it is older than seven days. Manually named files and browser downloads outside `Database/` are untouched. **Sync & refresh episodes** saves pending changes, checks the SQLite copy, and loads newer episodes when available. If another tab has conflicting edits, the save bar lets you download the device copy before loading the newer database copy. Database snapshots contain account password hashes and workspace data; keep them private. The `Database/` folder is excluded from Git.
+Use **Settings → Download full JSON backup** regularly and keep a copy outside this computer. **Download database (.sqlite)** creates a consistent SQLite snapshot while the app is running, saves it in the app's `Application Support/Amishna Music CMS/Database` folder with a date and time in its filename, and starts a browser download of the same file. Your browser chooses where that second copy goes. App-generated snapshots older than seven days are removed automatically at startup, after a new download, and daily while the app runs; the newest snapshot is always kept, even if it is older than seven days. Manually named files and browser downloads outside `Database/` are untouched. **Sync & refresh episodes** saves pending changes, checks the SQLite copy, and loads newer episodes when available. If another tab has conflicting edits, the save bar lets you download the device copy before loading the newer database copy. Database snapshots contain account password hashes and workspace data; keep them private.
 
 ## Moving to another computer
 

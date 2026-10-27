@@ -13,7 +13,7 @@ function configuration(env = process.env) {
   return {
     port,
     file: path.resolve(__dirname, '..', env.SQLITE_PATH || 'data/amishna.sqlite'),
-    backupDirectory: path.resolve(__dirname, '../..', 'Database'),
+    backupDirectory: path.resolve(env.BACKUP_DIRECTORY || path.resolve(__dirname, '../..', 'Database')),
     workspaceId: env.WORKSPACE_ID || 'main',
     frontendPort
   };
