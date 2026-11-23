@@ -468,6 +468,29 @@ function actualWorkbookBuilder() {
   return build;
 }
 
+for (const scope of ['single episode', 'all episodes']) test(`actual IPRS ${scope} export keeps singer names after the dialog and workbook scopes run`, async () => {
+  const input = sourceOptions();
+  input.works[0].artist = '';
+  input.works[0].artistIds = ['prs-singer', 'unregistered-singer'];
+  input.artists = [
+    { id: 'prs-singer', name: 'PRS Singer', societies: ['PRS'], roles: ['Performer'] },
+    { id: 'unregistered-singer', name: 'Unregistered Singer', societies: [], roles: ['Performer'] },
+  ];
+  const before = structuredClone(input), harness = dialogHarness({ build: actualWorkbookBuilder() });
+  harness.dialog.open(input);
+  if (scope === 'all episodes') harness.changeScope('all');
+  harness.clickFormat('IPRS');
+  await until(() => harness.downloads.length === 1);
+  const workbook = require('../public/vendor/xlsx.full.min.js').read(harness.downloads[0].binary, { type: 'array' });
+  const sheets = scope === 'all episodes' ? ['Episode_01', 'Episode_02'] : [workbook.SheetNames[0]];
+  for (const sheetName of sheets) {
+    const sheet = workbook.Sheets[sheetName];
+    assert.equal(sheet.H16.v, 'Composer');
+    assert.equal(sheet.L16.v, 'PRS Singer, Unregistered Singer');
+  }
+  assert.deepEqual(input, before);
+});
+
 for (const mode of ['single', 'movie-zip', 'episodes-zip', 'episodes-files']) {
   test(`real ${mode} exports apply IPRS row cleanup and preserve saved affiliation text in PRS and ASCAP`, async () => {
     const input = sourceOptions();

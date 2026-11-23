@@ -146,7 +146,7 @@ test('frozen membership snapshots retain historical decisions after artist membe
   const result = S.scope(data.cues, frozen, 'IPRS', data.artists);
   assert.deepEqual(result.works[0].parties.map(party => party.name), ['IPRS Writer', 'Dual Publisher']);
   assert.equal(result.works[0].artist, 'IPRS Singer, PRS Singer');
-  assert.deepEqual(result.works[0]._exportPerformers.map(artist => artist.name), ['IPRS Singer']);
+  assert.deepEqual(result.works[0]._exportPerformers.map(artist => artist.name), ['IPRS Singer', 'PRS Singer']);
   assert.equal(result.summary.IPRS.artists, 3);
 });
 
