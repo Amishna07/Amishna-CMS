@@ -132,7 +132,8 @@
     }
     const selected = originals.map(work => {
       const parties = work.parties.filter(party => exportEligible(party, society));
-      return { ...work, _exportSociety: society, parties: parties.map(party => ({ ...party, society: isNonMember(party) ? 'Non Member' : society })), artist: work._exportPerformers.filter(artist => has(artist, society)).map(artist => artist.name).join(', '), _exportPerformers: work._exportPerformers.filter(artist => has(artist, society)) };
+      const performers = work._exportPerformers;
+      return { ...work, _exportSociety: society, parties: parties.map(party => ({ ...party, society: isNonMember(party) ? 'Non Member' : society })), artist: performers.map(artist => artist.name).join(', '), _exportPerformers: performers.filter(artist => has(artist, society)) };
     }).filter(work => work.parties.length);
     const eligible = new Set(selected.map(work => work.id)), selectedCues = cues.filter(cue => eligible.has(cue.workId)).map(clone);
     return { cues: selectedCues, works: selected, summary: { ...summary({ works: originals, cues }), society, includedCues: selectedCues.length, excludedCues: cues.length - selectedCues.length } };

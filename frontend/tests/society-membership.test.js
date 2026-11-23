@@ -51,7 +51,7 @@ test('scopes exclude other societies and unknown affiliations, retain dual membe
   const result = S.scope(input.cues, input.works, 'IPRS', input.artists);
   assert.deepEqual(result.cues.map(cue => cue.id), ['cue-0']);
   assert.deepEqual(result.works[0].parties.map(party => [party.name, party.share, party.society]), [['IPRS Writer', 20, 'IPRS'], ['Dual Publisher', 25, 'IPRS']]);
-  assert.equal(result.works[0].artist, 'IPRS Singer');
+  assert.equal(result.works[0].artist, 'IPRS Singer, PRS Singer');
   assert.equal(result.cues[0].usagePercent, 1.875);
   assert.equal(result.summary.prsOnlyArtists, 2);
   assert.equal(result.summary.unknownArtists, 1);
@@ -145,14 +145,32 @@ test('frozen membership snapshots retain historical decisions after artist membe
   data.artists.forEach(artist => { artist.societies = ['ASCAP']; });
   const result = S.scope(data.cues, frozen, 'IPRS', data.artists);
   assert.deepEqual(result.works[0].parties.map(party => party.name), ['IPRS Writer', 'Dual Publisher']);
-  assert.equal(result.works[0].artist, 'IPRS Singer');
+  assert.equal(result.works[0].artist, 'IPRS Singer, PRS Singer');
+  assert.deepEqual(result.works[0]._exportPerformers.map(artist => artist.name), ['IPRS Singer']);
   assert.equal(result.summary.IPRS.artists, 3);
+});
+
+test('IPRS singer column includes linked singers regardless of their society membership', async () => {
+  const works = [{ id: 'song', title: 'Recorded Song', artist: '', artistIds: ['prs-singer', 'unknown-singer'], parties: [
+    { name: 'IPRS Writer', role: 'Composer', society: 'IPRS', share: 100 },
+  ] }];
+  const artists = [
+    { id: 'prs-singer', name: 'PRS Singer', societies: ['PRS'], roles: ['Performer'] },
+    { id: 'unknown-singer', name: 'Unregistered Singer', societies: [], roles: ['Performer'] },
+  ];
+  const cues = [{ id: 'song-cue', workId: 'song', duration: 60, usage: 'FV' }];
+  const bytes = await context.CueExports.buildFormatted('IPRS', project, null, cues, works, artists);
+  const workbook = XLSX.read(bytes, { type: 'array' }), sheet = workbook.Sheets[workbook.SheetNames[0]];
+  assert.equal(sheet.H13.v, 'IPRS Writer');
+  assert.equal(sheet.I13.v, 'IPRS');
+  assert.equal(sheet.L13.v, 'PRS Singer, Unregistered Singer');
+  assert.equal(works[0].artist, '', 'export does not rewrite saved song metadata');
 });
 
 test('historical confirmed-member IPRS and PRS worksheets contain only eligible contributor names and selected labels', async () => {
   const data = fixture(), before = JSON.stringify(data);
   for (const [society, names, absent, shareCells] of [
-    ['IPRS', ['IPRS Writer', 'Dual Publisher', 'IPRS Singer'], ['PRS Writer', 'PRS Singer', 'PRS Only Song', 'Unknown Writer', 'ASCAP Writer'], [['J13', '20%'], ['J14', '25%']]],
+    ['IPRS', ['IPRS Writer', 'Dual Publisher', 'IPRS Singer', 'PRS Singer'], ['PRS Writer', 'PRS Only Song', 'Unknown Writer', 'ASCAP Writer'], [['J13', '20%'], ['J14', '25%']]],
     ['PRS', ['PRS Writer', 'Dual Publisher', 'PRS Only Song'], ['IPRS Writer', 'Unknown Writer', 'ASCAP Writer'], [['H19', .3], ['H20', .25]]],
   ]) {
     const bytes = await context.CueExports.buildFormatted(society, project, null, data.cues, data.works, data.artists, { membershipPolicy: 'confirmed-members-v1' });
@@ -160,6 +178,7 @@ test('historical confirmed-member IPRS and PRS worksheets contain only eligible 
     const text = Object.values(sheet).map(cell => cell?.v).filter(value => typeof value === 'string').join('\n');
     for (const name of names) assert.ok(text.includes(name), society + ' missing ' + name);
     for (const name of absent) assert.ok(!new RegExp('\\b' + name + '\\b').test(text), society + ' includes ' + name);
+    if (society === 'IPRS') assert.equal(sheet.L13.v, 'IPRS Singer, PRS Singer', 'singers remain listed regardless of society membership');
     assert.ok(!text.includes('IPRS/PRS'));
     assert.ok(!text.includes('Unconfirmed Song'));
     for (const [cell, value] of shareCells) assert.equal(sheet[cell].v, value);
